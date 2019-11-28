@@ -2,12 +2,12 @@
 // type Pt = [i32; 3];
 type Pt<T> = [T; 3];
 
+// #[derive]
+#[derive(Ord, PartialOrd, Eq, PartialEq)]
 struct Rect<T> {
     p1 : Pt<T>,
     p2 : Pt<T>
 }
-
-
 
 fn zip_pt_with<T: Ord + Copy>(p1 : Pt<T>, p2 : Pt<T>, f : &dyn Fn(T, T) -> T) -> Pt<T> {
     return [f(p1[0], p2[0]), f(p1[1], p2[1]), f(p1[2], p2[2])];
