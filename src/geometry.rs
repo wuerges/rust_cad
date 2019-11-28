@@ -1,23 +1,30 @@
 
-// type Pt = [i32; 3];
-type Pt<T> = [T; 3];
+type Pt = [u32; 3];
 
 // #[derive]
-#[derive(Ord, PartialOrd, Eq, PartialEq)]
-struct Rect<T> {
-    p1 : Pt<T>,
-    p2 : Pt<T>
+#[derive(Ord, PartialOrd, Eq, PartialEq, Debug)]
+struct Rect {
+    p1 : Pt,
+    p2 : Pt
 }
 
-fn zip_pt_with<T: Ord + Copy>(p1 : Pt<T>, p2 : Pt<T>, f : &dyn Fn(T, T) -> T) -> Pt<T> {
+impl Rect {
+    fn expand(&self, e :u32) -> Rect {
+        let p1n = [self.p1[0]-1, self.p1[1]-1, self.p1[2]];
+        let p2n = [self.p2[0]+1, self.p2[1]+1, self.p2[2]];
+        return Rect { p1 : p1n, p2 : p2n };
+    }
+}
+
+fn zip_pt_with(p1 : Pt, p2 : Pt, f : &dyn Fn(u32, u32) -> u32) -> Pt {
     return [f(p1[0], p2[0]), f(p1[1], p2[1]), f(p1[2], p2[2])];
 }
 
-fn minpt<T: Ord + Copy>(p1 : Pt<T>, p2 : Pt<T>) -> Pt<T> {
+fn minpt(p1 : Pt, p2 : Pt) -> Pt {
     return zip_pt_with(p1, p2, &std::cmp::min);
 }
 
-fn maxpt<T: Ord + Copy>(p1 : Pt<T>, p2 : Pt<T>) -> Pt<T> {
+fn maxpt(p1 : Pt, p2 : Pt) -> Pt {
     return zip_pt_with(p1, p2, &std::cmp::max);
 }
 
@@ -31,7 +38,7 @@ mod tests {
     use quickcheck::Gen;
     
     #[derive(Clone, Debug)]
-    struct Pt32(pub Pt<u32>);
+    struct Pt32(pub Pt);
     impl Arbitrary for Pt32 {
 
         fn arbitrary<G: Gen>(g : &mut G) -> Self {
