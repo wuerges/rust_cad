@@ -122,4 +122,53 @@ impl<T: Copy> RTree<T> {
         }
     }
 
+
+    fn insert_node_p_imut(&self, r : Rect, v : T ) -> Ins<T> {
+        match self {
+            RTree::Sent => {
+                return Ins::NoSplit(Box::new(RTree::Leaf(r, v)));
+            },
+            RTree::Leaf(key, value) => {
+                return Ins::Split(
+                    Box::new(RTree::Leaf(r, v)),
+                    Box::new(RTree::Leaf(*key, *value)),
+                );
+            },
+            RTree::Child(bb, subtrees) => { // TODO
+
+                let mut cp : Vec<_> = subtrees.iter().collect();
+
+                cp.sort_by(|t1, t2| 
+                    {
+                        let x : f64 = bb.mbr(&t1.bb()).area();
+                        let y : f64 = bb.mbr(&t2.bb()).area();
+                        return x.partial_cmp(&y).unwrap_or(std::cmp::Ordering::Equal).reverse();
+                    }
+                );
+
+                let head = cp.pop().unwrap();
+
+                match head.insert_node_p_imut(r, v) {
+                    Ins::NoSplit(no_split) => {
+                        cp.push(&no_split);
+                        let bb_new = self.bb().mbr(&no_split.bb());
+                        let cp_new : Vec<Box<RTree<T>>> = Vec::new();
+                        // cp_new.append(cp.drain(0..).map(|e| *e).);
+                        return Ins::NoSplit(Box::new(RTree::Child(bb_new, cp_new)));
+                    },
+                    Ins::Split(one, two) => {
+                        return Ins::NoSplit(Box::new(RTree::Leaf(r, v)));
+                    }
+                }
+
+                // if subtrees.len() > 8 {
+
+                //     let extra_head = RTree::split_subtrees(subtrees);
+                //     return Some(extra_head)
+                // }
+                // return Ins::NoSplit(Box::new(RTree::Leaf(r, v)));
+            }
+        }
+    }
+
 }
