@@ -20,7 +20,7 @@ impl Rect {
     pub fn empty() -> Rect {
         return Rect::build_unsafe([0, 0,0],[0,0,0]);
     }
-    fn build_unsafe(p1 : Pt, p2 :Pt) -> Rect {
+    pub fn build_unsafe(p1 : Pt, p2 :Pt) -> Rect {
         return Rect {
             p1 : p1,
             p2 : p2
