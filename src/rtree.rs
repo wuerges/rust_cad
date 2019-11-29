@@ -95,9 +95,17 @@ impl<T: Copy> RTree<T> {
 
         let st = subtrees.to_vec();
 
-        let (left, right) : (Vec<RTree<T>>,Vec<RTree<T>>) = st.into_iter().partition( |t|
-            r1.mbr(&t.bb()).area() > r2.mbr(&t.bb()).area()
-        );
+        let mut eqs = 0;
+        let (left, right) : (Vec<RTree<T>>,Vec<RTree<T>>) = st.into_iter().partition( |t| {
+            let a1 = r1.mbr(&t.bb()).area();
+            let a2 = r2.mbr(&t.bb()).area();
+
+            if(a1 == a2) {
+                eqs += 1;
+                return eqs % 2 == 0;
+            }
+            return a1 < a2;
+        });
         
         
         let bb_right = right.iter().fold(right[0].bb(), |a,b| a.mbr(&b.bb()));
