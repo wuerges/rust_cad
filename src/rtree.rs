@@ -99,28 +99,8 @@ impl<T: Copy> RTree<T> {
 
     fn split_subtrees_imut_2(subtrees : Vec<RTree<T>>) -> (RTree<T>, RTree<T>) {
 
-        let mut count = 0;
-        let (left, right) : (Vec<_>, Vec<_>)= subtrees.into_iter().partition( |t| {
-            count += 1;
-            return count % 2 == 0; 
-        });
-
-        let bb1 = left.iter()
-            .map(|i| i.bb())
-            .fold(left[0].bb(), |sum, i| sum.mbr(&i));
-        let bb2 = right.iter()
-            .map(|i| i.bb())
-            .fold(right[0].bb(), |sum, i| sum.mbr(&i));
-
-        return (RTree::Child(bb1, left), RTree::Child(bb2, right));
-
-    }
-
-
-    fn split_subtrees_imut(subtrees : &Vec<RTree<T>>) -> (RTree<T>, RTree<T>) {
-
+        // Chooses the best rects for the subtrees
         let recs : Vec<Rect> = subtrees.iter().map( |t| t.bb() ).collect();
-
         let mut r1 = recs[0];
         let mut r2 = recs[1];
         let mut area = 0.0;
@@ -138,79 +118,32 @@ impl<T: Copy> RTree<T> {
             }
         }
 
-        let st = subtrees.to_vec();
 
-        let mut eqs = 0;
-        let (left, right) : (Vec<RTree<T>>,Vec<RTree<T>>) = st.into_iter().partition( |t| {
+
+
+        let mut count = 0;
+        let (left, right) : (Vec<_>, Vec<_>)= subtrees.into_iter().partition( |t| {
+            
             let a1 = r1.mbr(&t.bb()).area();
             let a2 = r2.mbr(&t.bb()).area();
-
+            
             if a1 == a2 {
-                eqs += 1;
-                return eqs % 2 == 0;
+                count += 1;
+                return count % 2 == 0;
             }
             return a1 < a2;
         });
-        
-        
-        let bb_right = right.iter().fold(right[0].bb(), |a,b| a.mbr(&b.bb()));
-        let bb_left = left.iter().fold(left[0].bb(), |a,b| a.mbr(&b.bb()));
 
-        return ( RTree::Child(bb_left, left)
-               , RTree::Child(bb_right, right));
-    
+        let bb1 = left.iter()
+            .map(|i| i.bb())
+            .fold(left[0].bb(), |sum, i| sum.mbr(&i));
+        let bb2 = right.iter()
+            .map(|i| i.bb())
+            .fold(right[0].bb(), |sum, i| sum.mbr(&i));
+
+        return (RTree::Child(bb1, left), RTree::Child(bb2, right));
+
     }
-
-    // fn insert_node_p(&mut self, r : Rect, v : T ) -> Option<Box<RTree<T>>> {
-    //     match self {
-    //         RTree::<T>::Sent => {
-    //             *self = RTree::<T>::Leaf(r, v);
-    //             return None
-    //         },
-    //         RTree::<T>::Leaf(_, _) => {
-    //             return Some(Box::new(RTree::<T>::Leaf(r, v)))
-    //         },
-    //         RTree::<T>::Child(bb, subtrees) => { // TODO
-    //             subtrees.sort_by(|t1, t2| 
-    //                 {
-    //                     let x : f64 = bb.mbr(&t1.bb()).area();
-    //                     let y : f64 = bb.mbr(&t2.bb()).area();
-    //                     return x.partial_cmp(&y).unwrap_or(std::cmp::Ordering::Equal);
-    //                 }
-    //             );
-
-    //             match subtrees[0].insert_node_p(r, v) {
-    //                 None => {
-    //                 }
-    //                 Some(extra_head) => {
-    //                     subtrees.push(extra_head)
-    //                 }
-    //             }
-
-    //             if subtrees.len() > 8 {
-
-    //                 let extra_head = RTree::split_subtrees(subtrees);
-    //                 return Some(extra_head)
-    //             }
-    //             return None
-    //         }
-    //     }
-    // }
-
-    // fn insert(&mut self, r : Rect, v : T)  {
-    //     match self.insert_node_p(r, v) {
-    //         None => {
-    //         },
-    //         Some(extra_head) => {
-    //             let bb = self.bb().mbr(&extra_head.bb());
-    //             let main_head = Box::new(RTree::<T>::Child(self.bb(), self.children()));
-    //             let children :Vec<Box<RTree<T>>> = vec![main_head, extra_head];
-    //             *self = RTree::<T>::Child(bb, children);
-    //         }
-    //     }
-    // }
-
-
 
     pub fn insert(self, r : Rect, v : T) -> RTree<T> {
         match self.insert_node_p_imut(r, v) {
