@@ -1,6 +1,6 @@
 use crate::geometry::Rect;
 
-#[derive(Clone, Debug)]
+#[derive(Clone,Debug)]
 pub enum RTree<T> {
     Sent,
     Leaf  (Rect, T),
@@ -14,19 +14,45 @@ enum Ins<T> {
 
 impl<T: Copy> RTree<T> {
 
-    // fn children(&mut self) -> Vec<Box<RTree<T>>> {
-    //     match self {
-    //         RTree::<T>::Sent => Vec::new(),
-    //         RTree::<T>::Leaf(_, _) => Vec::new(),
-    //         RTree::<T>::Child(_, child) => child.drain(0..).collect()
-    //     }
-    // }
+    pub fn search<F>(&self, r : &Rect, f : &mut F) -> bool 
+    where 
+        F: FnMut(&T)-> bool,
+    {
+        match self {
+            RTree::Sent => true,
+            RTree::Leaf(key, v) => match r.intersection(&key) {
+                None => true,
+                Some(_) => f(v)
+            }
+            RTree::Child(bb, child) => match r.intersection(&bb) {
+                None => true,
+                Some(_) => {
+                    for c in child {
+                        if !c.search(r, f) {
+                            return false
+                        }
+                    }
+                    return true
+                }
+            }
+        }
+    }
+
+    pub fn collect(&self, r : &Rect) -> Vec<T> {
+        let mut vals = Vec::<T>::new();
+
+        self.search(r, &mut |t| {
+            vals.push(*t);
+            return true;
+        });
+        return vals;
+    }
 
     fn bb(& self) -> Rect {
         match self {
-            RTree::<T>::Sent => Rect::empty(),
-            RTree::<T>::Leaf(key, _) => *key,
-            RTree::<T>::Child(bb, _) => *bb
+            RTree::Sent => Rect::empty(),
+            RTree::Leaf(key, _) => *key,
+            RTree::Child(bb, _) => *bb
         }
     }
 
@@ -54,52 +80,10 @@ impl<T: Copy> RTree<T> {
         }
     }
     
-    // fn split_subtrees(subtrees : &mut Vec<Box<RTree<T>>>) -> Box<RTree<T>> {
-
-    //     let recs : Vec<Rect> = subtrees.iter().map( |t| t.bb() ).collect();
-
-    //     let mut r1 = recs[0];
-    //     let mut r2 = recs[1];
-    //     let mut area = 0.0;
-
-    //     for i in 0..recs.len() {
-    //         for j in 0..recs.len() {
-    //             if i < j {
-    //                 let x = recs[i].mbr(&recs[j]).area();
-    //                 if x > area {
-    //                     area = x;
-    //                     r1 = recs[i];
-    //                     r2 = recs[j];
-    //                 }
-    //             }
-    //         }
-    //     }
-
-    //     let mut left : Vec<Box<RTree<T>>> = Vec::new();
-    //     let mut right : Vec<Box<RTree<T>>> = Vec::new();
-
-    //     subtrees.drain(0..).for_each(|t| {
-    //         if r1.mbr(&t.bb()).area() > r2.mbr(&t.bb()).area() {
-    //             left.push(t)
-    //         }
-    //         else {
-    //             right.push(t)
-    //         }
-    //     });
-
-    //     subtrees.append(&mut left);
-
-    //     // TODO bugado se left or right forem vazios
-    //     let bb = right.iter().fold(right[0].bb(), |a,b| a.mbr(&b.bb()));
-
-    //     return Box::new(RTree::<T>::Child(bb, right));
-    
-    // }
-
 
     fn split_subtrees_imut_2(subtrees : Vec<RTree<T>>) -> (RTree<T>, RTree<T>) {
 
-        // Chooses the best rects for the subtrees
+        // Chooses the best rects for the subtrees using O(n^2)
         let recs : Vec<Rect> = subtrees.iter().map( |t| t.bb() ).collect();
         let mut r1 = recs[0];
         let mut r2 = recs[1];
@@ -118,9 +102,7 @@ impl<T: Copy> RTree<T> {
             }
         }
 
-
-
-
+        // partitions the node according to the selected rects.
         let mut count = 0;
         let (left, right) : (Vec<_>, Vec<_>)= subtrees.into_iter().partition( |t| {
             
@@ -264,15 +246,13 @@ mod tests {
 
         return rlen == t.len();
     }
+    
+    // #[test]
+    // fn insert_180000() {
+    //     let t0 = RTree::<i32>::Sent;
+    //     let r1 = Rect::build_unsafe([897125487, 825057424, 716138779], [3253067062, 2391459330, 3751124909]);
+
+    //     let tree = (1..180000).fold(t0, |t,i| t.insert(r1, i));
+    // }
 
 }
-
-// #[cfg(test)]
-// mod tests {
-
-//     use super::*;
-//     #[test]
-//     fn it_works() {
-//         assert_eq!(2 + 2, xsum(2,2));
-//     }
-// }

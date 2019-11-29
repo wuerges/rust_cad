@@ -41,7 +41,7 @@ impl Rect {
             .fold(1.0, |m,i| m*i);
     }
 
-    fn intersection(&self, other : &Rect) -> Option<Rect> {
+    pub fn intersection(&self, other : &Rect) -> Option<Rect> {
 
         let p1i = maxpt(self.p1, other.p1);
         let p2i = minpt(self.p2, other.p2);

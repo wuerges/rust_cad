@@ -13,31 +13,34 @@ fn main() {
 
     println!("-------------------------------------------------");
     println!("Tree = {:?}", r);
-    let r1 = Rect::build_unsafe([897125487, 825057424, 716138779], [3253067062, 2391459330, 3751124909]);
+    let r1 = Rect::build_unsafe([0, 0, 0], [1, 1, 1]);
     let r = r.insert(r1, 1);
     println!("-------------------------------------------------");
     println!("Tree = {:?}", r);
-    let r2 = Rect::build_unsafe([590069298, 455955083, 409746648], [844108913, 600953719, 502025764]);
-    let r = r.insert(r2, 1);
+    let r2 = Rect::build_unsafe([5, 5, 5], [6, 6, 6]);
+    let r = r.insert(r2, 2);
     println!("-------------------------------------------------");
     println!("Tree = {:?}", r);
-    let r3 = Rect::build_unsafe([152449100, 19176439, 949041722], [3143509272, 706576841, 1801634347]);
-    let r = r.insert(r3, 1);
-    let r = r.insert(r3, 1);
-    let r = r.insert(r3, 1);
-    let r = r.insert(r3, 1);
-    let r = r.insert(r3, 1);
-    let r = r.insert(r3, 1);
-    let r = r.insert(r3, 1);
-    let r = r.insert(r3, 1);
-    let r = r.insert(r3, 1);
-    let r = r.insert(r3, 1);
-    let r = r.insert(r3, 1);
+    let r3 = Rect::build_unsafe([3, 3, 3], [4, 4, 4]);
+    let r = r.insert(r3, 3);
+    let r = r.insert(r3, 3);
+    let r = r.insert(r3, 3);
+    let r = r.insert(r3, 3);
+    let r = r.insert(r3, 3);
+    let r = r.insert(r3, 3);
+    let r = r.insert(r3, 3);
+    let r = r.insert(r3, 3);
+    let r = r.insert(r3, 3);
+    let r = r.insert(r3, 3);
+    let r = r.insert(r3, 3);
 
     let tree = (1..180000).fold(r, |t,i| t.insert(r1, i));
-
+    
     println!("-------------------------------------------------");
     println!("Tree = {:?}", tree);
+    println!("Collect = {:?}", tree.collect(&r1));
+    println!("Collect = {:?}", tree.collect(&r2));
+    println!("Collect = {:?}", tree.collect(&r3));
 
     // println!("Rects = {:?} {:?} {:?}", r1, r2, r3);
 }
