@@ -212,7 +212,7 @@ impl<T: Copy> RTree<T> {
 
 
 
-    pub fn insert(& self, r : Rect, v : T) -> RTree<T> {
+    pub fn insert(self, r : Rect, v : T) -> RTree<T> {
         match self.insert_node_p_imut(r, v) {
             Ins::NoSplit(no_split) => {
                 no_split
@@ -225,7 +225,7 @@ impl<T: Copy> RTree<T> {
     }
 
 
-    fn insert_node_p_imut(&self, r : Rect, v : T ) -> Ins<T> {
+    fn insert_node_p_imut(self, r : Rect, v : T ) -> Ins<T> {
         match self {
             RTree::Sent => {
                 return Ins::NoSplit(RTree::Leaf(r, v));
@@ -233,32 +233,30 @@ impl<T: Copy> RTree<T> {
             RTree::Leaf(key, value) => {
                 return Ins::Split(
                     RTree::Leaf(r, v),
-                    RTree::Leaf(*key, *value),
+                    RTree::Leaf(key, value),
                 );
             },
-            RTree::Child(bb, subtrees) => { 
+            RTree::Child(bb, mut subtrees) => { 
 
-                let mut sts = subtrees.to_vec();
-                let (h, mut ead) = sts.split_last_mut().unwrap();
-                let mut new_child = ead.to_owned();
+                let h = subtrees.pop().unwrap();
 
                 match h.insert_node_p_imut(r, v) {
                     Ins::NoSplit(no_split) => {
                         let new_bb = bb.mbr(&no_split.bb());
-                        new_child.push(no_split);
-                        return Ins::NoSplit(RTree::Child(new_bb, new_child));
+                        subtrees.push(no_split);
+                        return Ins::NoSplit(RTree::Child(new_bb, subtrees));
                     }
                     Ins::Split(one, two) => {
                         let new_bb1 = bb.mbr(&one.bb()).mbr(&two.bb());
                         let new_bb2 = bb.mbr(&one.bb()).mbr(&two.bb());
-                        new_child.push(one);
-                        new_child.push(two);
+                        subtrees.push(one);
+                        subtrees.push(two);
 
-                        if new_child.len() <= 8 {
-                            return Ins::NoSplit(RTree::Child(new_bb1, new_child));
+                        if subtrees.len() <= 8 {
+                            return Ins::NoSplit(RTree::Child(new_bb1, subtrees));
                         }
                         else {
-                            let (left, right) = RTree::split_subtrees_imut_2(new_child);
+                            let (left, right) = RTree::split_subtrees_imut_2(subtrees);
                             return Ins::Split(left, right);
                         }
                     }

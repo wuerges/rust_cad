@@ -33,8 +33,11 @@ fn main() {
     let r = r.insert(r3, 1);
     let r = r.insert(r3, 1);
     let r = r.insert(r3, 1);
+
+    let tree = (1..180000).fold(r, |t,i| t.insert(r1, i));
+
     println!("-------------------------------------------------");
-    println!("Tree = {:?}", r);
+    println!("Tree = {:?}", tree);
 
     // println!("Rects = {:?} {:?} {:?}", r1, r2, r3);
 }
