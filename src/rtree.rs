@@ -238,6 +238,15 @@ impl<T: Copy> RTree<T> {
             },
             RTree::Child(bb, mut subtrees) => { 
 
+                subtrees.sort_by(
+                    |t1, t2| 
+                    {
+                        let x : f64 = bb.mbr(&t1.bb()).area();
+                        let y : f64 = bb.mbr(&t2.bb()).area();
+                        return x.partial_cmp(&y).unwrap_or(std::cmp::Ordering::Equal).reverse();
+                    }
+                );
+
                 let h = subtrees.pop().unwrap();
 
                 match h.insert_node_p_imut(r, v) {
@@ -247,13 +256,13 @@ impl<T: Copy> RTree<T> {
                         return Ins::NoSplit(RTree::Child(new_bb, subtrees));
                     }
                     Ins::Split(one, two) => {
-                        let new_bb1 = bb.mbr(&one.bb()).mbr(&two.bb());
-                        let new_bb2 = bb.mbr(&one.bb()).mbr(&two.bb());
+
+                        let new_bb = bb.mbr(&one.bb()).mbr(&two.bb());
                         subtrees.push(one);
                         subtrees.push(two);
-
-                        if subtrees.len() <= 8 {
-                            return Ins::NoSplit(RTree::Child(new_bb1, subtrees));
+                        
+                        if subtrees.len() < 8 {
+                            return Ins::NoSplit(RTree::Child(new_bb, subtrees));
                         }
                         else {
                             let (left, right) = RTree::split_subtrees_imut_2(subtrees);
@@ -261,44 +270,7 @@ impl<T: Copy> RTree<T> {
                         }
                     }
                 }
-                // return Ins::NoSplit(RTree::Sent);
 
-
-                // let mut cp = subtrees.to_vec();
-                // cp.sort_by(
-                //     |t1, t2| 
-                //     {
-                //         let x : f64 = bb.mbr(&t1.bb()).area();
-                //         let y : f64 = bb.mbr(&t2.bb()).area();
-                //         return x.partial_cmp(&y).unwrap_or(std::cmp::Ordering::Equal).reverse();
-                //     }
-                // );
-
-                // let (h, ead) = cp.split_last().unwrap();
-                // // let mut eadv = ead.to_owned();
-                // let mut eadv = ead.to_owned();
-
-
-                // match h.insert_node_p_imut(r, v) {
-                //     Ins::NoSplit(no_split) => {
-                //         let bb_new = self.bb().mbr(&no_split.bb());
-                //         eadv.push(no_split);
-                //         // return Ins::NoSplit(RTree::Child(bb_new, cp));
-                //         return Ins::NoSplit(RTree::Child(bb_new, eadv));
-                //     },
-                //     Ins::Split(one, two) => {
-
-                //         eadv.push(one);
-                //         eadv.push(two);
-
-                //         if eadv.len() > 8 {
-                //             let (a, b) = RTree::split_subtrees_imut(&eadv);
-                //             return Ins::Split(a, b);
-                //         }
-                        
-                //         return Ins::NoSplit(RTree::Leaf(r, v));
-                //     }
-                // }
             }
         }
     }
