@@ -30,6 +30,17 @@ impl<T: Copy> RTree<T> {
         }
     }
 
+    pub fn len(&self) -> usize {
+        match self {
+            RTree::Sent => 0,
+            RTree::Leaf(_,_) => 1,
+            RTree::Child(_, child) => {
+                return child.iter()
+                        .fold(0, |sum,t| sum + t.len() );
+            }
+        }
+    }
+
     pub fn height(&self) -> i32 {
         match self {
             RTree::Sent => 0,
@@ -292,6 +303,17 @@ mod tests {
     #[quickcheck]
     fn prop_height_balanced(t : RTree<i32> ) -> bool {
         return t.height() >= 0;
+    }
+
+
+    #[quickcheck]
+    fn prop_number_elements(rects : Vec::<Rect> ) -> bool {
+        let rlen = rects.len();
+
+        let t0 = RTree::Sent;
+        let t = rects.into_iter().fold(t0, |t,r| t.insert(r, ()));
+
+        return rlen == t.len();
     }
 
 }
