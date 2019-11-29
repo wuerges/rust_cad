@@ -91,6 +91,15 @@ mod tests {
         }
     
     }
+    impl Arbitrary for Rect {
+
+        fn arbitrary<G: Gen>(g : &mut G) -> Self {
+            let Pt32(p1) = Pt32::arbitrary(g);
+            let Pt32(p2) = Pt32::arbitrary(g);
+            return Rect::build(p1, p2);
+        }
+    
+    }
 
     #[quickcheck]
     fn prop_minpt_is_min(p1 : Pt32, p2: Pt32) -> bool {

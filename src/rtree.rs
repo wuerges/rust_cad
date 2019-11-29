@@ -1,6 +1,6 @@
 use crate::geometry::Rect;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum RTree<T> {
     Sent,
     Leaf  (Rect, T),
@@ -234,3 +234,59 @@ impl<T: Copy> RTree<T> {
     }
 
 }
+
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    
+    use quickcheck::Arbitrary;
+    use quickcheck::Gen;
+    
+    #[derive(Clone)]
+    struct VoidRTree(RTree<()>);
+
+    impl Arbitrary for VoidRTree {
+
+        fn arbitrary<G: Gen>(g : &mut G) -> Self {
+            let rects : Vec<Rect> = Vec::<Rect>::arbitrary(g);
+            
+            let r = RTree::Sent;
+
+            let t = rects.into_iter().fold(r, |t,i| t.insert(i, ()));
+            return VoidRTree(t);
+        }
+    
+    }
+
+    impl<T: Arbitrary + Copy> Arbitrary for RTree<T> {
+
+        fn arbitrary<G: Gen>(g : &mut G) -> Self {
+            let rects = Vec::<(Rect, T)>::arbitrary(g);
+            
+            let r = RTree::Sent;
+
+            let t = rects.into_iter().fold(r, |t,(r, v)| t.insert(r, v));
+
+            return t;
+        }
+    
+    }
+    
+    #[quickcheck]
+    fn prop_height_balanced(rects : RTree<i32> ) -> bool {
+        return false;
+    }
+
+}
+
+// #[cfg(test)]
+// mod tests {
+
+//     use super::*;
+//     #[test]
+//     fn it_works() {
+//         assert_eq!(2 + 2, xsum(2,2));
+//     }
+// }
