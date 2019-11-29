@@ -29,6 +29,19 @@ impl<T: Copy> RTree<T> {
             RTree::<T>::Child(bb, _) => *bb
         }
     }
+
+    pub fn height(&self) -> i32 {
+        match self {
+            RTree::Sent => 0,
+            RTree::Leaf(_,_) => 1,
+            RTree::Child(_, child) => {
+                let h1 = child[0].height();
+                return child.iter()
+                        .map( |c| c.height())
+                        .fold(h1, |h,hi| if h==hi {h} else {-1} )
+            }
+        }
+    }
     
     // fn split_subtrees(subtrees : &mut Vec<Box<RTree<T>>>) -> Box<RTree<T>> {
 
@@ -100,7 +113,7 @@ impl<T: Copy> RTree<T> {
             let a1 = r1.mbr(&t.bb()).area();
             let a2 = r2.mbr(&t.bb()).area();
 
-            if(a1 == a2) {
+            if a1 == a2 {
                 eqs += 1;
                 return eqs % 2 == 0;
             }
@@ -164,6 +177,8 @@ impl<T: Copy> RTree<T> {
     //         }
     //     }
     // }
+
+
 
     pub fn insert(& self, r : Rect, v : T) -> RTree<T> {
         match self.insert_node_p_imut(r, v) {
@@ -275,8 +290,8 @@ mod tests {
     }
     
     #[quickcheck]
-    fn prop_height_balanced(rects : RTree<i32> ) -> bool {
-        return false;
+    fn prop_height_balanced(t : RTree<i32> ) -> bool {
+        return t.height() >= 0;
     }
 
 }
