@@ -1,19 +1,29 @@
 
-type Pt = [u32; 3];
+pub type Pt = [u32; 3];
 
 // #[derive]
-#[derive(Ord, PartialOrd, Eq, PartialEq, Debug)]
-struct Rect {
+#[derive(Ord, PartialOrd, Eq, PartialEq, Debug, Copy, Clone)]
+pub struct Rect {
     p1 : Pt,
     p2 : Pt
 }
 
 impl Rect {
 
-    fn make(p1 : Pt, p2 :Pt) -> Rect {
+    pub fn build(p1 : Pt, p2 :Pt) -> Rect {
         return Rect {
             p1 : minpt(p1, p2),
             p2 : maxpt(p1, p2)
+        }
+    }
+
+    pub fn empty() -> Rect {
+        return Rect::build_unsafe([0, 0,0],[0,0,0]);
+    }
+    fn build_unsafe(p1 : Pt, p2 :Pt) -> Rect {
+        return Rect {
+            p1 : p1,
+            p2 : p2
         }
     }
 
@@ -24,7 +34,7 @@ impl Rect {
         return Rect { p1 : p1n, p2 : p2n };
     }
 
-    fn area(&self) -> f64 {
+    pub fn area(&self) -> f64 {
         return zip_pt_with(self.p1, self.p2, 
             &|e1,e2| (e1 as f64 - e2 as f64).abs())
             .iter()
@@ -42,7 +52,11 @@ impl Rect {
             }
         }
 
-        return Some(Rect::make(p1i, p2i));
+        return Some(Rect::build(p1i, p2i));
+    }
+
+    pub fn mbr(&self, other : &Rect) -> Rect {
+        return Rect::build_unsafe(minpt(self.p1, other.p1), maxpt(self.p2, other.p2));
     }
 }
 
