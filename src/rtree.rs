@@ -157,7 +157,7 @@ impl<T: Copy> RTree<T> {
     //     }
     // }
 
-    fn insert(& self, r : Rect, v : T) -> RTree<T> {
+    pub fn insert(& self, r : Rect, v : T) -> RTree<T> {
         match self.insert_node_p_imut(r, v) {
             Ins::NoSplit(no_split) => {
                 no_split
@@ -183,9 +183,12 @@ impl<T: Copy> RTree<T> {
             },
             RTree::Child(bb, subtrees) => { 
 
-                let mut cp : Vec<RTree<T>> = subtrees.to_vec(); //.clone().iter().collect();
+                // let mut cp : Vec<RTree<T>> = subtrees.to_vec(); //.clone().iter().collect();
+                // let mut cp = subtrees.as_slice();
 
-                cp.sort_by(|t1, t2| 
+                let mut cp = subtrees.to_vec();
+                cp.sort_by(
+                    |t1, t2| 
                     {
                         let x : f64 = bb.mbr(&t1.bb()).area();
                         let y : f64 = bb.mbr(&t2.bb()).area();
@@ -193,38 +196,31 @@ impl<T: Copy> RTree<T> {
                     }
                 );
 
-                // let (h, ead) = cp.split_last().unwrap();
-                // let back = ead.con
+                let (h, ead) = cp.split_last().unwrap();
+                // let mut eadv = ead.to_owned();
+                let mut eadv = ead.to_owned();
 
-                let head = cp.pop().unwrap();
 
-                match head.insert_node_p_imut(r, v) {
+                match h.insert_node_p_imut(r, v) {
                     Ins::NoSplit(no_split) => {
                         let bb_new = self.bb().mbr(&no_split.bb());
-                        cp.push(no_split);
+                        eadv.push(no_split);
                         // return Ins::NoSplit(RTree::Child(bb_new, cp));
-                        return Ins::NoSplit(RTree::Child(bb_new, cp));
+                        return Ins::NoSplit(RTree::Child(bb_new, eadv));
                     },
                     Ins::Split(one, two) => {
 
-                        cp.push(one);
-                        cp.push(two);
+                        eadv.push(one);
+                        eadv.push(two);
 
-                        if cp.len() > 8 {
-                            let (a, b) = RTree::split_subtrees_imut(&cp);
+                        if eadv.len() > 8 {
+                            let (a, b) = RTree::split_subtrees_imut(&eadv);
                             return Ins::Split(a, b);
                         }
                         
                         return Ins::NoSplit(RTree::Leaf(r, v));
                     }
                 }
-
-                // if subtrees.len() > 8 {
-
-                //     let extra_head = RTree::split_subtrees(subtrees);
-                //     return Some(extra_head)
-                // }
-                // return Ins::NoSplit(Box::new(RTree::Leaf(r, v)));
             }
         }
     }
