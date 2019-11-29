@@ -23,6 +23,16 @@ fn main() {
     println!("Tree = {:?}", r);
     let r3 = Rect::build_unsafe([152449100, 19176439, 949041722], [3143509272, 706576841, 1801634347]);
     let r = r.insert(r3, 1);
+    let r = r.insert(r3, 1);
+    let r = r.insert(r3, 1);
+    let r = r.insert(r3, 1);
+    let r = r.insert(r3, 1);
+    let r = r.insert(r3, 1);
+    let r = r.insert(r3, 1);
+    let r = r.insert(r3, 1);
+    let r = r.insert(r3, 1);
+    let r = r.insert(r3, 1);
+    let r = r.insert(r3, 1);
     println!("-------------------------------------------------");
     println!("Tree = {:?}", r);
 

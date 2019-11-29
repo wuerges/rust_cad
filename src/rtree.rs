@@ -96,6 +96,27 @@ impl<T: Copy> RTree<T> {
     
     // }
 
+
+    fn split_subtrees_imut_2(subtrees : Vec<RTree<T>>) -> (RTree<T>, RTree<T>) {
+
+        let mut count = 0;
+        let (left, right) : (Vec<_>, Vec<_>)= subtrees.into_iter().partition( |t| {
+            count += 1;
+            return count % 2 == 0; 
+        });
+
+        let bb1 = left.iter()
+            .map(|i| i.bb())
+            .fold(left[0].bb(), |sum, i| sum.mbr(&i));
+        let bb2 = right.iter()
+            .map(|i| i.bb())
+            .fold(right[0].bb(), |sum, i| sum.mbr(&i));
+
+        return (RTree::Child(bb1, left), RTree::Child(bb2, right));
+
+    }
+
+
     fn split_subtrees_imut(subtrees : &Vec<RTree<T>>) -> (RTree<T>, RTree<T>) {
 
         let recs : Vec<Rect> = subtrees.iter().map( |t| t.bb() ).collect();
@@ -228,10 +249,18 @@ impl<T: Copy> RTree<T> {
                         return Ins::NoSplit(RTree::Child(new_bb, new_child));
                     }
                     Ins::Split(one, two) => {
-                        let new_bb = bb.mbr(&one.bb()).mbr(&two.bb());
+                        let new_bb1 = bb.mbr(&one.bb()).mbr(&two.bb());
+                        let new_bb2 = bb.mbr(&one.bb()).mbr(&two.bb());
                         new_child.push(one);
                         new_child.push(two);
-                        return Ins::NoSplit(RTree::Child(new_bb, new_child));
+
+                        if new_child.len() <= 8 {
+                            return Ins::NoSplit(RTree::Child(new_bb1, new_child));
+                        }
+                        else {
+                            let (left, right) = RTree::split_subtrees_imut_2(new_child);
+                            return Ins::Split(left, right);
+                        }
                     }
                 }
                 // return Ins::NoSplit(RTree::Sent);
