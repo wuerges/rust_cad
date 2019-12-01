@@ -41,6 +41,10 @@ impl Rect {
             .fold(1.0, |m,i| m*i);
     }
 
+    pub fn distance(&self, other : &Rect) -> u32 {
+        panic!("not implemented");
+    }
+
     pub fn intersection(&self, other : &Rect) -> Option<Rect> {
 
         let p1i = maxpt(self.p1, other.p1);

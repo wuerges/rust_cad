@@ -1,11 +1,11 @@
 
 #[derive(Debug)]
-struct Item<K, V> {
-    key : K, 
-    value : V
+pub struct Item<K, V> {
+    pub key : K, 
+    pub value : V
 }
 
-struct PrioriteQueue<K, V> {
+pub struct PrioriteQueue<K, V> {
     data : Vec<Item<K, V>>
 }
 
