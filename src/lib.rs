@@ -8,3 +8,4 @@ pub mod geometry;
 pub mod rtree;
 pub mod rtreequeue;
 pub mod priorityqueue;
+pub mod graph;
