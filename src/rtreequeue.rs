@@ -6,8 +6,8 @@ use std::rc::Rc;
 
 pub struct RTreeQueue<T> {
     center : Rect,
-    // rtree : Rc<RTree<T>>,
-    queue : PrioriteQueue<u32, Rc<RTree<T>>>
+    // rtree : Rc<RTreeImpl<T>>,
+    queue : PrioriteQueue<u32, Rc<RTreeImpl<T>>>
 }
 
 impl<T: Copy> RTreeQueue<T> {
@@ -16,13 +16,13 @@ impl<T: Copy> RTreeQueue<T> {
         return self.queue.peek().is_none();
     }
 
-    pub fn push(&mut self, tree: Rc<RTree<T>>) {
+    pub fn push(&mut self, tree: Rc<RTreeImpl<T>>) {
         match *tree {
-            RTree::Sent => {},
-            RTree::Leaf(rect, _) => {
+            RTreeImpl::Sent => {},
+            RTreeImpl::Leaf(rect, _) => {
                 self.queue.push(rect.distance(&self.center), tree);
             }
-            RTree::Child(rect, _) => {
+            RTreeImpl::Child(rect, _) => {
                 self.queue.push(rect.distance(&self.center), tree);
             }
         }
@@ -34,13 +34,13 @@ impl<T: Copy> RTreeQueue<T> {
         match x {
             None => {},
             Some(tree) => match &*tree.value {
-                RTree::Sent => {
+                RTreeImpl::Sent => {
                     return self.pop()
                 },
-                RTree::Leaf(_, data) => {
+                RTreeImpl::Leaf(_, data) => {
                     return Some(*data);
                 },
-                RTree::Child(_, child) => {
+                RTreeImpl::Child(_, child) => {
                     for c in child {
                         self.push(Rc::clone(c));
                     }

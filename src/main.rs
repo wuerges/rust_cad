@@ -5,7 +5,7 @@ fn main() {
     use rust_cad_geometry::*;
     use rust_cad_geometry::geometry::*;
 
-    let t0 = rtree::Facade(Rc::new(rtree::RTree::<i32>::Sent));
+    let t0 = rtree::RTree(Rc::new(rtree::RTreeImpl::<i32>::Sent));
 
     // let empty = geometry::Rect::empty();
     // r.insert(empty, 1);

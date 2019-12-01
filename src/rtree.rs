@@ -2,47 +2,47 @@ use crate::geometry::Rect;
 use std::rc::Rc;
 
 #[derive(Clone,Debug)]
-pub enum RTree<T> {
+pub enum RTreeImpl<T> {
     Sent,
     Leaf  (Rect, T),
-    Child (Rect, Vec<Rc<RTree<T>>>)
+    Child (Rect, Vec<Rc<RTreeImpl<T>>>)
 }
 
 enum Ins<T> {
-    NoSplit(Rc<RTree<T>>),
-    Split(Rc<RTree<T>>, Rc<RTree<T>>)
+    NoSplit(Rc<RTreeImpl<T>>),
+    Split(Rc<RTreeImpl<T>>, Rc<RTreeImpl<T>>)
 }
 
 #[derive(Debug)]
-pub struct Facade<T> (pub Rc<RTree<T>>);
+pub struct RTree<T> (pub Rc<RTreeImpl<T>>);
 
-impl<T:Copy> Facade<T> {
+impl<T:Copy> RTree<T> {
     pub fn insert(self, r : Rect, v : T) -> Self {
-        match RTree::insert_node_p_imut(self.0, r, v) {
+        match RTreeImpl::insert_node_p_imut(self.0, r, v) {
             Ins::NoSplit(no_split) => {
-                Facade(no_split)
+                RTree(no_split)
             },
             Ins::Split(one, two) => {
                 let bb = one.bb().mbr(&two.bb());
-                return Facade(Rc::new(RTree::Child(bb, vec![one, two])));
+                return RTree(Rc::new(RTreeImpl::Child(bb, vec![one, two])));
             }
         }
     }
 }
 
-impl<T: Copy> RTree<T> {
+impl<T: Copy> RTreeImpl<T> {
 
     pub fn search<F>(&self, r : &Rect, f : &mut F) -> bool 
     where 
         F: FnMut(&T)-> bool,
     {
         match self {
-            RTree::Sent => true,
-            RTree::Leaf(key, v) => match r.intersection(&key) {
+            RTreeImpl::Sent => true,
+            RTreeImpl::Leaf(key, v) => match r.intersection(&key) {
                 None => true,
                 Some(_) => f(v)
             }
-            RTree::Child(bb, child) => match r.intersection(&bb) {
+            RTreeImpl::Child(bb, child) => match r.intersection(&bb) {
                 None => true,
                 Some(_) => {
                     for c in child {
@@ -68,17 +68,17 @@ impl<T: Copy> RTree<T> {
 
     fn bb(& self) -> Rect {
         match self {
-            RTree::Sent => Rect::empty(),
-            RTree::Leaf(key, _) => *key,
-            RTree::Child(bb, _) => *bb
+            RTreeImpl::Sent => Rect::empty(),
+            RTreeImpl::Leaf(key, _) => *key,
+            RTreeImpl::Child(bb, _) => *bb
         }
     }
 
     pub fn len(&self) -> usize {
         match self {
-            RTree::Sent => 0,
-            RTree::Leaf(_,_) => 1,
-            RTree::Child(_, child) => {
+            RTreeImpl::Sent => 0,
+            RTreeImpl::Leaf(_,_) => 1,
+            RTreeImpl::Child(_, child) => {
                 return child.iter()
                         .fold(0, |sum,t| sum + t.len() );
             }
@@ -87,9 +87,9 @@ impl<T: Copy> RTree<T> {
 
     pub fn height(&self) -> i32 {
         match self {
-            RTree::Sent => 0,
-            RTree::Leaf(_,_) => 1,
-            RTree::Child(_, child) => {
+            RTreeImpl::Sent => 0,
+            RTreeImpl::Leaf(_,_) => 1,
+            RTreeImpl::Child(_, child) => {
                 let h1 = child[0].height();
                 return child.iter()
                         .map( |c| c.height())
@@ -99,7 +99,7 @@ impl<T: Copy> RTree<T> {
     }
     
 
-    fn split_subtrees_imut_2(subtrees : Vec<Rc<RTree<T>>>) -> (RTree<T>, RTree<T>) {
+    fn split_subtrees_imut_2(subtrees : Vec<Rc<RTreeImpl<T>>>) -> (RTreeImpl<T>, RTreeImpl<T>) {
 
         // Chooses the best rects for the subtrees using O(n^2)
         let recs : Vec<Rect> = subtrees.iter().map( |t| t.bb() ).collect();
@@ -141,22 +141,22 @@ impl<T: Copy> RTree<T> {
             .map(|i| i.bb())
             .fold(right[0].bb(), |sum, i| sum.mbr(&i));
 
-        return (RTree::Child(bb1, left), RTree::Child(bb2, right));
+        return (RTreeImpl::Child(bb1, left), RTreeImpl::Child(bb2, right));
 
     }
 
-    fn insert_node_p_imut(node : Rc<RTree<T>>, r : Rect, v : T ) -> Ins<T> {
+    fn insert_node_p_imut(node : Rc<RTreeImpl<T>>, r : Rect, v : T ) -> Ins<T> {
         match &*node {
-            RTree::Sent => {
-                return Ins::NoSplit(Rc::new(RTree::Leaf(r, v)));
+            RTreeImpl::Sent => {
+                return Ins::NoSplit(Rc::new(RTreeImpl::Leaf(r, v)));
             },
-            RTree::Leaf(key, value) => {
+            RTreeImpl::Leaf(key, value) => {
                 return Ins::Split(
-                    Rc::new(RTree::Leaf(r, v)),
-                    Rc::new(RTree::Leaf(*key, *value)),
+                    Rc::new(RTreeImpl::Leaf(r, v)),
+                    Rc::new(RTreeImpl::Leaf(*key, *value)),
                 );
             },
-            RTree::Child(bb, rc_subtrees) => { 
+            RTreeImpl::Child(bb, rc_subtrees) => { 
 
                 let mut subtrees : Vec<_> = rc_subtrees.iter().map( |x| Rc::clone(x) ).collect();
 
@@ -173,11 +173,11 @@ impl<T: Copy> RTree<T> {
                 let h = subtrees.pop().unwrap();
 
                 
-                match RTree::insert_node_p_imut(h, r, v) {
+                match RTreeImpl::insert_node_p_imut(h, r, v) {
                     Ins::NoSplit(no_split) => {
                         let new_bb = bb.mbr(&no_split.bb());
                         subtrees.push(no_split);
-                        return Ins::NoSplit(Rc::new(RTree::Child(new_bb, subtrees)));
+                        return Ins::NoSplit(Rc::new(RTreeImpl::Child(new_bb, subtrees)));
                     }
                     Ins::Split(one, two) => {
                         
@@ -186,10 +186,10 @@ impl<T: Copy> RTree<T> {
                         subtrees.push(two);
                         
                         if subtrees.len() < 8 {
-                            return Ins::NoSplit(Rc::new(RTree::Child(new_bb, subtrees)));
+                            return Ins::NoSplit(Rc::new(RTreeImpl::Child(new_bb, subtrees)));
                         }
                         else {
-                            let (left, right) = RTree::split_subtrees_imut_2(subtrees);
+                            let (left, right) = RTreeImpl::split_subtrees_imut_2(subtrees);
                             return Ins::Split(Rc::new(left), Rc::new(right));
                         }
                     }
@@ -210,14 +210,14 @@ mod tests {
     use quickcheck::Gen;
     
     #[derive(Clone)]
-    struct VoidRTree(RTree<()>);
+    struct VoidRTree(RTreeImpl<()>);
 
     // impl Arbitrary for VoidRTree {
 
     //     fn arbitrary<G: Gen>(g : &mut G) -> Self {
     //         let rects : Vec<Rect> = Vec::<Rect>::arbitrary(g);
             
-    //         let r = RTree::Sent;
+    //         let r = RTreeImpl::Sent;
 
     //         let t = rects.into_iter().fold(r, |t,i| t.insert(i, ()));
     //         return VoidRTree(t);
@@ -225,12 +225,12 @@ mod tests {
     
     // }
 
-    // impl<T: Arbitrary + Copy> Arbitrary for RTree<T> {
+    // impl<T: Arbitrary + Copy> Arbitrary for RTreeImpl<T> {
 
     //     fn arbitrary<G: Gen>(g : &mut G) -> Self {
     //         let rects = Vec::<(Rect, T)>::arbitrary(g);
             
-    //         let r = RTree::Sent;
+    //         let r = RTreeImpl::Sent;
 
     //         let t = rects.into_iter().fold(r, |t,(r, v)| t.insert(r, v));
 
@@ -240,7 +240,7 @@ mod tests {
     // }
     
     // #[quickcheck]
-    // fn prop_height_balanced(t : RTree<i32> ) -> bool {
+    // fn prop_height_balanced(t : RTreeImpl<i32> ) -> bool {
     //     return t.height() >= 0;
     // }
 
@@ -249,7 +249,7 @@ mod tests {
     fn prop_number_elements(rects : Vec::<Rect> ) -> bool {
         let rlen = rects.len();
 
-        // let t0 = RTree::Sent;
+        // let t0 = RTreeImpl::Sent;
         // let t = rects.into_iter().fold(t0, |t,r| t.insert(r, ()));
 
         // return rlen == t.len();
@@ -258,7 +258,7 @@ mod tests {
     
     // #[test]
     // fn insert_180000() {
-    //     let t0 = RTree::<i32>::Sent;
+    //     let t0 = RTreeImpl::<i32>::Sent;
     //     let r1 = Rect::build_unsafe([897125487, 825057424, 716138779], [3253067062, 2391459330, 3751124909]);
 
     //     let tree = (1..180000).fold(t0, |t,i| t.insert(r1, i));
