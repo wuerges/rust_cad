@@ -8,6 +8,22 @@ pub struct Rect {
     p2 : Pt
 }
 
+fn dist1d(a :u32, b:u32, aw:u32, bw: u32) -> u32 {
+
+    if a < b {
+        if a + aw < b {
+            return b - a - aw;
+        }
+        return 0;
+    }
+    else {
+        if b + bw < a {
+            return a - b - bw;
+        }
+        return 0;
+    }
+}
+
 impl Rect {
 
     pub fn build(p1 : Pt, p2 :Pt) -> Rect {
@@ -42,7 +58,29 @@ impl Rect {
     }
 
     pub fn distance(&self, other : &Rect) -> u32 {
-        panic!("not implemented");
+
+        let mut sum : u32 = 0;
+
+        for i in 0..3 {
+
+            let diff_self = if self.p1[i] > self.p2[i] { 
+                self.p1[i] - self.p2[i] 
+            } 
+            else { 
+                self.p2[i] - self.p1[i] 
+            };
+
+            let diff_other = if other.p1[i] > other.p2[i] { 
+                other.p1[i] - other.p2[i] 
+            } 
+            else { 
+                other.p2[i] - other.p1[i] 
+            };
+
+            sum += dist1d(self.p1[i], other.p1[i], diff_self, diff_other);
+        }
+
+        return sum;
     }
 
     pub fn intersection(&self, other : &Rect) -> Option<Rect> {
@@ -50,7 +88,7 @@ impl Rect {
         let p1i = maxpt(self.p1, other.p1);
         let p2i = minpt(self.p2, other.p2);
 
-        for i in 0..2 {
+        for i in 0..3 {
             if p1i[i] > p2i[i] {
                 return None
             }
