@@ -9,3 +9,4 @@ pub mod rtree;
 pub mod rtreequeue;
 pub mod priorityqueue;
 pub mod graph;
+pub mod muf;
