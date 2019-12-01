@@ -8,6 +8,7 @@ pub struct Parse {
     pub shapes : Vec<Rect>,
     pub obstacles : Vec<Rect>,
     pub spacing : u32,
+    pub via_cost : u32,
     pub boundary : Rect
 }
 
@@ -18,6 +19,7 @@ pub fn parse_file(filename : &Path) -> io::Result<Parse> {
     let mut shapes = Vec::new();
     let mut obstacles  = Vec::new();
     let mut spacing = 0;
+    let mut via_cost = 0;
     let mut boundary = Rect::empty();
 
     for io_line in f.lines() {
@@ -26,8 +28,11 @@ pub fn parse_file(filename : &Path) -> io::Result<Parse> {
 
         match tokens[0] {
             "ViaCost" => {
-                println!("vc = {:?}", tokens[2]);
-            }
+                via_cost = tokens[2].parse().unwrap();
+            },
+            "Spacing" => {
+                spacing = tokens[2].parse().unwrap();
+            },
             _ => {
                 panic!("parser error. unmatched line: {:?}", line);
             }
@@ -39,6 +44,8 @@ pub fn parse_file(filename : &Path) -> io::Result<Parse> {
         shapes : shapes,
         obstacles : obstacles,
         spacing : spacing,
+        via_cost : via_cost,
         boundary : boundary
     });
 }
+
