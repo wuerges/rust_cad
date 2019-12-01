@@ -5,7 +5,7 @@ pub struct Item<K, V> {
     pub value : V
 }
 
-pub struct PrioriteQueue<K, V> {
+pub struct PriorityQueue<K, V> {
     data : Vec<Item<K, V>>
 }
 
@@ -24,7 +24,7 @@ fn parent(i :usize) ->usize {
     (i-1) / 2
 }
 
-impl<K :Ord +Copy, V> PrioriteQueue<K, V> {
+impl<K :Ord +Copy, V> PriorityQueue<K, V> {
 
     fn bubble_up(&mut self, p : usize) {
         let mut i = p;
@@ -55,6 +55,7 @@ impl<K :Ord +Copy, V> PrioriteQueue<K, V> {
     }
 
     pub fn peek(&self) -> Option<K> {
+        // return self.data.first();
         return self.data.first().and_then( |f| Some(f.key) );
     }
 
@@ -85,7 +86,7 @@ mod tests {
 
     #[test]
     fn check_elements_in_order() {
-        let mut q = PrioriteQueue::<i32, i32>::new();
+        let mut q = PriorityQueue::<i32, i32>::new();
 
         q.push(10, 0);
         q.push(10, 1);
@@ -119,7 +120,7 @@ mod tests {
     fn prop_check_elements_in_order(pars : Vec<i32> ) -> bool {
         println!("begin test {:?}", pars);
         
-        let mut q = PrioriteQueue::<i32, ()>::new();
+        let mut q = PriorityQueue::<i32, ()>::new();
 
         let mut count = 0;
         let mut min_key = std::i32::MIN;

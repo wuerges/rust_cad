@@ -3,7 +3,7 @@
 struct Edge (usize, usize);
 
 pub struct Graph<V> {
-    vertices : Vec<V>,
+    pub vertices : Vec<V>,
     edges    : Vec<Edge>
 }
 
