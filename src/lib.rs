@@ -12,3 +12,4 @@ pub mod graph;
 pub mod muf;
 pub mod locationfinder;
 pub mod astar;
+pub mod parser;
