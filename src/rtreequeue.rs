@@ -42,7 +42,7 @@ impl<T: Copy> RTreeQueue<T> {
                 },
                 RTree::Child(_, child) => {
                     for c in child {
-                        self.push(Rc::new(c));
+                        self.push(Rc::clone(c));
                     }
                     return self.pop();
                 }
