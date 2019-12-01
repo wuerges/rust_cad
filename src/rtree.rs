@@ -17,6 +17,23 @@ enum Ins<T> {
 pub struct RTree<T> (pub Rc<RTreeImpl<T>>);
 
 impl<T:Copy> RTree<T> {
+    pub fn empty() -> Self {
+        RTree(Rc::new(RTreeImpl::Sent))
+    }
+
+    pub fn hits(&self, r : Rect) -> bool {
+        let mut res = false;
+        self.search(&r, &mut |_| {
+            res = true;
+            return false;
+        });
+        return res;
+    }
+
+    pub fn from_list(v: Vec<(Rect, T)>) -> Self {
+        v.into_iter().fold(RTree::empty(), |t,(r,v)| t.insert(r, v))
+    }
+
     pub fn insert(self, r : Rect, v : T) -> Self {
         match RTreeImpl::insert_node_p_imut(self.0, r, v) {
             Ins::NoSplit(no_split) => {
@@ -27,6 +44,21 @@ impl<T:Copy> RTree<T> {
                 return RTree(Rc::new(RTreeImpl::Child(bb, vec![one, two])));
             }
         }
+    }
+
+    pub fn search<F>(&self, r : &Rect, f : &mut F) -> bool 
+    where 
+        F: FnMut(&T)-> bool,
+    {
+        return self.0.search(r, f);
+    }
+
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+
+    pub fn collect(&self, r : &Rect) -> Vec<T> {
+        return self.0.collect(r);
     }
 }
 
@@ -206,62 +238,48 @@ impl<T: Copy> RTreeImpl<T> {
 mod tests {
     use super::*;
     
-    use quickcheck::Arbitrary;
-    use quickcheck::Gen;
-    
-    #[derive(Clone)]
-    struct VoidRTree(RTreeImpl<()>);
+    #[quickcheck]
+    fn prop_height_balanced(v : Vec::<Rect> ) -> bool {
 
-    // impl Arbitrary for VoidRTree {
+        let t = RTree::from_list(v.into_iter().zip(1..).collect::<Vec<(Rect,i32)>>());
+        return t.0.height() >= 0;
+    }
 
-    //     fn arbitrary<G: Gen>(g : &mut G) -> Self {
-    //         let rects : Vec<Rect> = Vec::<Rect>::arbitrary(g);
-            
-    //         let r = RTreeImpl::Sent;
+    #[quickcheck]
+    fn prop_find_elements(v : Vec::<Rect> ) -> bool {
 
-    //         let t = rects.into_iter().fold(r, |t,i| t.insert(i, ()));
-    //         return VoidRTree(t);
-    //     }
-    
-    // }
+        let v2 = v.clone();
 
-    // impl<T: Arbitrary + Copy> Arbitrary for RTreeImpl<T> {
+        let t = RTree::from_list(v.into_iter().zip(1..).collect::<Vec<(Rect,i32)>>());
 
-    //     fn arbitrary<G: Gen>(g : &mut G) -> Self {
-    //         let rects = Vec::<(Rect, T)>::arbitrary(g);
-            
-    //         let r = RTreeImpl::Sent;
-
-    //         let t = rects.into_iter().fold(r, |t,(r, v)| t.insert(r, v));
-
-    //         return t;
-    //     }
-    
-    // }
-    
-    // #[quickcheck]
-    // fn prop_height_balanced(t : RTreeImpl<i32> ) -> bool {
-    //     return t.height() >= 0;
-    // }
+        for r in v2 {
+            if ! t.hits(r) {
+                return false;
+            }
+        }
+        return true;
+    }
 
 
     #[quickcheck]
     fn prop_number_elements(rects : Vec::<Rect> ) -> bool {
         let rlen = rects.len();
 
-        // let t0 = RTreeImpl::Sent;
-        // let t = rects.into_iter().fold(t0, |t,r| t.insert(r, ()));
+        let t0 = RTree::empty();
+        let t = rects.into_iter().fold(t0, |t,r| t.insert(r, ()));
 
-        // return rlen == t.len();
-        return false;
+        return rlen == t.len();
     }
     
     // #[test]
     // fn insert_180000() {
-    //     let t0 = RTreeImpl::<i32>::Sent;
+    //     let t0 = RTree::empty();
+
     //     let r1 = Rect::build_unsafe([897125487, 825057424, 716138779], [3253067062, 2391459330, 3751124909]);
 
-    //     let tree = (1..180000).fold(t0, |t,i| t.insert(r1, i));
+    //     let tree = (0..180000).fold(t0, |t,i| t.insert(r1, i));
+
+    //     assert_eq!(tree.len(), 180000);
     // }
 
 }
