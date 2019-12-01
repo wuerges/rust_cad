@@ -59,6 +59,16 @@ impl<K :Ord +Copy, V> PriorityQueue<K, V> {
         return self.data.first().and_then( |f| Some(f.key) );
     }
 
+    pub fn look<F>(&mut self, f: &mut F)
+    where
+        F: FnMut(&mut Item<K, V> ),
+    {
+        if self.data.len() > 0 {
+            f(&mut self.data[0]);
+            self.bubble_down(0);
+        }
+    }
+
 
     pub fn pop(&mut self) -> Option<Item<K,V>> {
         if self.data.is_empty() {

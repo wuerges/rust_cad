@@ -4,25 +4,16 @@ use crate::geometry::Rect;
 use crate::rtree::*;
 use crate::priorityqueue::*;
 use crate::rtreequeue::*;
-use crate::graph::*;
 use crate::muf::*;
 use std::rc::Rc;
 
-// struct Edge {
-//     u : usize,
-//     v : usize,
-//     path : Option<Vec<Pt>>
-// }
-
-// enum Edge {
-struct RTQ { u : usize, rtq : Box<RTreeQueue<usize>> }
-struct Route { u: usize, v : usize, length : u32, route : Vec<Pt> }
+struct RTQ { u : usize, rtq : RTreeQueue<usize> }
+struct Route { u: usize, v : usize, length : u32, path : Vec<Pt> }
 
 struct Finder {
     shape_index : RTree<usize>,
     obs_index   : RTree<usize>,
-    g : Graph<Rect>,
-    // shapes      : Vec<Rect>,
+    shapes      : Vec<Rect>,
     bounds      : Rect,
 }
 
@@ -33,22 +24,20 @@ impl Finder {
         Finder {
             shape_index : RTree::from_list(shapes.iter().cloned().zip(0..).collect()),
             obs_index   : RTree::from_list(obstacles.into_iter().zip(0..).collect()),
-            // shapes      : shapes.clone(),
-            g           : Graph::new(shapes),
+            shapes      : shapes.clone(),
             bounds      : bounds
         }
     }
 
     fn route(&mut self) -> Vec<Vec<Pt>> {
-        let mut muf = MUF::new(self.g.vertices.len());
         let mut num_edges = 0;
-        let vertices = &self.g.vertices;
+        let vertices = &self.shapes;
+        let mut muf = MUF::new(vertices.len());
         
-        let mut rtqs = Vec::<RTQ>::new();
-        let mut routes = Vec::<Route>::new();
+        let mut routes = Vec::<Vec::<Pt>>::new();
         
-        let mut rtq_q = PriorityQueue::<u32, usize>::new();
-        let mut route_q = PriorityQueue::<u32, usize>::new();
+        let mut rtq_q = PriorityQueue::<u32, Box<RTQ>>::new();
+        let mut route_q = PriorityQueue::<u32, Route>::new();
 
         for (u, u_rect) in vertices.iter().enumerate() {
             let mut z = RTreeQueue::new(*u_rect, Rc::clone(&self.shape_index.0));
@@ -61,35 +50,30 @@ impl Finder {
                 }
             }
 
-            rtq_q.push(z.peek(), rtqs.len());
-            rtqs.push(RTQ{ u : u, rtq : Box::new(z) });
+            rtq_q.push(z.peek(), Box::new(RTQ{ u, rtq : z }));
         }
 
-        while num_edges + 1 < self.g.vertices.len() {
-            let e = q.pop().unwrap().value;
+        while num_edges + 1 < vertices.len() {
+            if rtq_q.peek().unwrap_or(std::u32::MAX) 
+            < route_q.peek().unwrap_or(std::u32::MAX) {
 
-            match &mut edges[e] {
-                Edge::RTQ {u, rtq} => {
-                    let v = rtq.pop().unwrap();
-                    q.push(rtq.peek(), e);
-                    if muf.find(v) != muf.find(*u) {
-                        let d = vertices[*u].distance(&vertices[v]);
-                        
-                        q.push(d, edges.len());
-                        edges.push(Edge::Route {u : *u, v: v, length : d, route : Vec::new() });
-                    }
-                },
-                // Edge::Edge {u, v} => {
+                rtq_q.look( &mut |it| {
+                    let v = it.value.rtq.pop().unwrap();
 
-                // },
-                Edge::Route {u, v, length, route} => {
+                    route_q.push(0, Route{ u: it.value.u, v:v, length : 0, path : Vec::new() });
+                });
 
+            }
+            else {
+                let e = route_q.pop().unwrap().value;
+                if muf.find(e.u) != muf.find(e.v) {
+                    muf.union(e.u, e.v);
+                    routes.push(e.path);
+                    num_edges += 1;
                 }
-            }            
+            }
         }
 
-
-
-        return Vec::new();
+        return routes;
     }
 }
