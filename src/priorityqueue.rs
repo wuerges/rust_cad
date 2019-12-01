@@ -13,19 +13,26 @@ impl<K: Ord+Copy, V> PrioriteQueue<K, V> {
             .push(value);
     }
 
-    pub fn peek(&self) -> Option<&K> {
-        self.data.keys().next()
+    pub fn peek(&self) -> Option<K> {
+        return self.data.keys().next().and_then( |key| Some(*key) );
     }
 
 
     pub fn pop(&mut self) -> Option<V> {
-        match self.peek() {
-            None => None,
-            Some(key) => {
-                self.data.entry(*key)
-                    .or_insert(Vec::new())
-                    .pop()
-            }
-        }
+        return self.peek().and_then( |key| 
+            self.data.entry(key)
+            .or_insert(Vec::new())
+            .pop()
+        );
+
+
+        // match self.peek() {
+        //     None => None,
+        //     Some(key) => {
+        //         self.data.entry(*key)
+        //             .or_insert(Vec::new())
+        //             .pop()
+        //     }
+        // }
     }
 }
