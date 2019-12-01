@@ -10,7 +10,7 @@ use std::rc::Rc;
 
 struct RTQ { u : usize, rtq : RTreeQueue<usize> }
 
-struct Finder {
+pub struct Finder {
     shape_index : RTree<usize>,
     obs_index   : RTree<usize>,
     shapes      : Vec<Rect>,
@@ -19,7 +19,7 @@ struct Finder {
 
 
 impl Finder {
-    fn new ( shapes : Vec<Rect>, obstacles : Vec<Rect>, bounds : Rect) -> Self {
+    pub fn new ( shapes : Vec<Rect>, obstacles : Vec<Rect>, bounds : Rect) -> Self {
 
         Finder {
             shape_index : RTree::from_list(shapes.iter().cloned().zip(0..).collect()),
@@ -29,7 +29,7 @@ impl Finder {
         }
     }
 
-    fn route(&mut self) -> Vec<Vec<Pt>> {
+    pub fn route(&mut self) -> Vec<Vec<Pt>> {
         let mut num_edges = 0;
         let vertices = &self.shapes;
         let mut muf = MUF::new(vertices.len());

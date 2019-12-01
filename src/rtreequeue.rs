@@ -13,10 +13,12 @@ pub struct RTreeQueue<T> {
 impl<T: Copy> RTreeQueue<T> {
 
     pub fn new(cent : Rect, qu : Rc<RTreeImpl<T>>) -> Self {
-        RTreeQueue {
+        let mut q = PriorityQueue::new();
+        q.push(0, qu);
+        return RTreeQueue {
             center : cent,
-            queue : PriorityQueue::new()
-        }
+            queue : q
+        };
     }
 
     pub fn is_empty(&self) -> bool {
