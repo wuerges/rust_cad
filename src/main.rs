@@ -15,7 +15,7 @@ fn main() -> io::Result<()>  {
 
     let result = parse_file(Path::new(input));
 
-    println!("Result = {:?}", result);
+    // println!("Result = {:?}", result);
 
     let ok = result?;
 
