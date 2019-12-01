@@ -7,3 +7,4 @@ extern crate quickcheck_macros;
 pub mod geometry;
 pub mod rtree;
 pub mod rtreequeue;
+pub mod priorityqueue;
