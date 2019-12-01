@@ -5,10 +5,10 @@ use crate::rtree::*;
 use crate::priorityqueue::*;
 use crate::rtreequeue::*;
 use crate::muf::*;
+use crate::astar::*;
 use std::rc::Rc;
 
 struct RTQ { u : usize, rtq : RTreeQueue<usize> }
-struct Route { u: usize, v : usize, length : u32, path : Vec<Pt> }
 
 struct Finder {
     shape_index : RTree<usize>,
@@ -37,7 +37,7 @@ impl Finder {
         let mut routes = Vec::<Vec::<Pt>>::new();
         
         let mut rtq_q = PriorityQueue::<u32, Box<RTQ>>::new();
-        let mut route_q = PriorityQueue::<u32, Route>::new();
+        let mut route_q = PriorityQueue::<u32, (usize, usize, Route)>::new();
 
         for (u, u_rect) in vertices.iter().enumerate() {
             let mut z = RTreeQueue::new(*u_rect, Rc::clone(&self.shape_index.0));
@@ -58,17 +58,23 @@ impl Finder {
             < route_q.peek().unwrap_or(std::u32::MAX) {
 
                 rtq_q.look( &mut |it| {
+                    let u = it.value.u;
                     let v = it.value.rtq.pop().unwrap();
 
-                    route_q.push(0, Route{ u: it.value.u, v:v, length : 0, path : Vec::new() });
+                    let p = astar(vertices[u], vertices[v], &self.shape_index, &self.obs_index, self.bounds);
+
+                    if muf.find(u) != muf.find(v) {
+                        route_q.push(p.length, (u, v, p));
+                    }
+
                 });
 
             }
             else {
-                let e = route_q.pop().unwrap().value;
-                if muf.find(e.u) != muf.find(e.v) {
-                    muf.union(e.u, e.v);
-                    routes.push(e.path);
+                let (u, v, route) = route_q.pop().unwrap().value;
+                if muf.find(u) != muf.find(v) {
+                    muf.union(u, v);
+                    routes.push(route.path);
                     num_edges += 1;
                 }
             }
