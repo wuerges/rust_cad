@@ -33,19 +33,27 @@ impl<K :Ord +Copy, V> PriorityQueue<K, V> {
             i = parent(i);
         }
     }
-    fn bubble_down(&mut self, p :usize) {
-        let mut smallest = p;
-        if left(p) < self.data.len() 
-        && self.data[left(p)].key <  self.data[smallest].key {
-            smallest = left(p);
-        }
-        if right(p) < self.data.len() 
-        && self.data[right(p)].key <  self.data[smallest].key {
-            smallest = right(p);
-        }
-        if smallest != p {
-            self.data.swap(p, smallest);
-            self.bubble_down(smallest);
+    fn bubble_down(&mut self, p0 :usize) {
+        let mut p = p0;
+        loop {
+            let mut smallest = p;
+            if left(p) < self.data.len() 
+            && self.data[left(p)].key <  self.data[smallest].key {
+                smallest = left(p);
+            }
+            if right(p) < self.data.len() 
+            && self.data[right(p)].key <  self.data[smallest].key {
+                smallest = right(p);
+            }
+            if smallest == p {
+                break;
+            }
+            // if smallest != p {
+            else {
+                self.data.swap(p, smallest);
+                p = smallest;
+                // self.bubble_down(smallest);
+            }
         }
     }
 
@@ -77,11 +85,9 @@ impl<K :Ord +Copy, V> PriorityQueue<K, V> {
         if self.data.len() == 1 {
             return self.data.pop();
         }
-        let end = self.data.len()-1;
-        self.data.swap(0, end);
-        let x = self.data.pop();
+        let x = self.data.swap_remove(0);
         self.bubble_down(0);
-        return x;
+        return Some(x);
     }
 
     pub fn new() -> Self {
