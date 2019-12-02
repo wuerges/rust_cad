@@ -4,8 +4,8 @@ pub type Pt = [u32; 3];
 // #[derive]
 #[derive(Ord, PartialOrd, Eq, PartialEq, Debug, Copy, Clone)]
 pub struct Rect {
-    p1 : Pt,
-    p2 : Pt
+    pub p1 : Pt,
+    pub p2 : Pt
 }
 
 fn dist1d(a :u32, b:u32, aw:u32, bw: u32) -> u32 {

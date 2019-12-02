@@ -1,6 +1,7 @@
 use crate::rtree::*;
 use crate::geometry::Rect;
 use crate::priorityqueue::*;
+// use std::borrow::BorrowMut;
 use std::rc::Rc;
 
 
@@ -42,25 +43,26 @@ impl<T: Copy> RTreeQueue<T> {
     }
 
     pub fn pop(&mut self) -> Option<T> {
-        let x = self.queue.pop();
-
-        match x {
-            None => return None,
-            Some(tree) => match &*tree.value {
-                RTreeImpl::Sent => {
-                    return self.pop()
-                },
-                RTreeImpl::Leaf(_, data) => {
-                    return Some(*data);
-                },
-                RTreeImpl::Child(_, child) => {
-                    for c in child {
-                        self.push(Rc::clone(c));
+        
+        loop {
+            let x = self.queue.pop();
+            match x {
+                None => return None,
+                Some(tree) => {
+                    match &*tree.value {
+                        RTreeImpl::Sent => {
+                        },
+                        RTreeImpl::Leaf(_, data) => {
+                            return Some(*data);
+                        },
+                        RTreeImpl::Child(_, child) => {
+                            for c in child.iter() {
+                                self.push(Rc::clone(c));
+                            }
+                        }
                     }
-                    return self.pop();
                 }
             }
         }
     }
-
 }

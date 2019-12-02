@@ -13,21 +13,37 @@ fn main() -> io::Result<()>  {
     let args: Vec<String> = env::args().collect();
     let (input, output) = parse_config(&args);
 
-    let result = parse_file(Path::new(input));
+    let mut result = parse_file(Path::new(input))?;
 
     // println!("Result = {:?}", result);
 
-    let ok = result?;
+    println!("parse ok");
+
+    for s in &mut result.shapes {
+        s.p1[2] *= result.via_cost;
+        s.p2[2] *= result.via_cost;
+    }
+
+    for s in &mut result.obstacles {
+        s.p1[2] *= result.via_cost;
+        s.p2[2] *= result.via_cost;
+    }
+
+    result.boundary.p1[2] *= result.via_cost;
+    result.boundary.p2[2] *= result.via_cost;
+
 
     let mut f = Finder::new( 
-        ok.shapes,
-        ok.obstacles,
-        ok.boundary
+        result.shapes,
+        result.obstacles,
+        result.boundary
     );
+
+    println!("finder ok");
 
     let route = f.route();
 
-    println!("resulting route: {:?}", route);
+    println!("route ok: {:?}", route);
     println!("need to write to file {:?}", output);
     // println!("Collect = {:?}", tree.collect(&r1));
     // println!("Collect = {:?}", tree.collect(&r2));

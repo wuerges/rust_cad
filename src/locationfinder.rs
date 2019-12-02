@@ -40,10 +40,14 @@ impl Finder {
         let mut route_q = PriorityQueue::<u32, (usize, usize, Route)>::new();
 
         for (u, u_rect) in vertices.iter().enumerate() {
+            println!("progress {:?} {:?} {:?}/{:?}", u, u_rect, num_edges+1, vertices.len());
+
             let mut z = RTreeQueue::new(*u_rect, Rc::clone(&self.shape_index.0));
 
             while z.peek() == 0 {
+
                 let v = z.pop().unwrap();
+                println!("u={:?}, v={:?}, r_u={:?}, r_v={:?} dist={:?}", u, v, vertices[u], vertices[v], vertices[u].distance(&vertices[v]));
                 if muf.find(u) != muf.find(v) {
                     muf.union(u, v);
                     num_edges += 1;
@@ -54,6 +58,7 @@ impl Finder {
         }
 
         while num_edges + 1 < vertices.len() {
+            println!("progress {:?}/{:?}", num_edges+1, vertices.len());
             if rtq_q.peek().unwrap_or(std::u32::MAX) 
             < route_q.peek().unwrap_or(std::u32::MAX) {
 
