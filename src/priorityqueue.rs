@@ -69,11 +69,15 @@ impl<K :Ord +Copy, V> PriorityQueue<K, V> {
 
     pub fn look<F>(&mut self, f: &mut F)
     where
-        F: FnMut(&mut Item<K, V> ),
+        F: FnMut(&mut Item<K, V> ) -> bool,
     {
         if self.data.len() > 0 {
-            f(&mut self.data[0]);
-            self.bubble_down(0);
+            if f(&mut self.data[0]) {
+                self.bubble_down(0);
+            }
+            else {
+                self.pop();
+            }
         }
     }
 

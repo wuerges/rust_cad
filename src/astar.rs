@@ -15,7 +15,7 @@ pub fn astar(
     boundary: Rect) -> Route 
 {
     return Route {
-        length : 0,
+        length : u.distance(&v),
         path : Vec::new()
     };
 }

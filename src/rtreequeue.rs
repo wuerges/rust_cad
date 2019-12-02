@@ -46,23 +46,41 @@ impl<T: Copy> RTreeQueue<T> {
         
         loop {
             let x = self.queue.pop();
-            match x {
-                None => return None,
-                Some(tree) => {
-                    match &*tree.value {
-                        RTreeImpl::Sent => {
-                        },
-                        RTreeImpl::Leaf(_, data) => {
-                            return Some(*data);
-                        },
-                        RTreeImpl::Child(_, child) => {
-                            for c in child.iter() {
-                                self.push(Rc::clone(c));
-                            }
+            if x.is_none() {
+                return None
+            }
+            else {
+                let tree = x.unwrap().value;
+                match &*tree {
+                    RTreeImpl::Sent => {},
+                    RTreeImpl::Leaf(_, data) => {
+                        return Some(*data);
+                    },
+                    RTreeImpl::Child(_, child) => {
+                        for c in child.iter().cloned() {
+                            self.push(c);
                         }
                     }
                 }
             }
+
+            // match x {
+            //     None => return None,
+            //     Some(tree) => {
+            //         match *tree.value {
+            //             RTreeImpl::Sent => {
+            //             },
+            //             RTreeImpl::Leaf(_, data) => {
+            //                 return Some(data);
+            //             },
+            //             RTreeImpl::Child(_, child) => {
+            //                 // for c in child.to_iter() {
+            //                 //     self.push(Rc::clone(c));
+            //                 // }
+            //             }
+            //         }
+            //     }
+            // }
         }
     }
 }
