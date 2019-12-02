@@ -42,17 +42,18 @@ impl Finder {
         for (u, u_rect) in vertices.iter().enumerate() {
             println!("progress {:?} {:?} {:?}/{:?}", u, u_rect, num_edges+1, vertices.len());
 
-            let mut z = RTreeQueue::new(*u_rect, Rc::clone(&self.shape_index.0));
+            let z = RTreeQueue::new(*u_rect, Rc::clone(&self.shape_index.0));
+            // let mut z = RTreeQueue::new(*u_rect, Rc::clone(&self.shape_index.0));
 
-            while z.peek() == 0 {
+            // while z.peek() == 0 {
 
-                let v = z.pop().unwrap();
-                println!("u={:?}, v={:?}, r_u={:?}, r_v={:?} dist={:?}", u, v, vertices[u], vertices[v], vertices[u].distance(&vertices[v]));
-                if muf.find(u) != muf.find(v) {
-                    muf.union(u, v);
-                    num_edges += 1;
-                }
-            }
+            //     let v = z.pop().unwrap();
+            //     println!("u={:?}, v={:?}, r_u={:?}, r_v={:?} dist={:?}", u, v, vertices[u], vertices[v], vertices[u].distance(&vertices[v]));
+            //     if muf.find(u) != muf.find(v) {
+            //         muf.union(u, v);
+            //         num_edges += 1;
+            //     }
+            // }
 
             rtq_q.push(z.peek(), Box::new(RTQ{ u, rtq : z }));
         }
