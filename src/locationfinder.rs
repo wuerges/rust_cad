@@ -8,17 +8,17 @@ use crate::muf::*;
 use crate::astar::*;
 use std::rc::Rc;
 
-struct RTQ { u : usize, rtq : RTreeQueue<usize> }
+struct RTQ<'a> { u : usize, rtq : RTreeQueue<'a, usize> }
 
-pub struct Finder {
-    shape_index : RTree<usize>,
-    obs_index   : RTree<usize>,
+pub struct Finder<'a> {
+    shape_index : RTree<'a, usize>,
+    obs_index   : RTree<'a, usize>,
     shapes      : Vec<Rect>,
     bounds      : Rect,
 }
 
 
-impl Finder {
+impl<'a> Finder<'a> {
     pub fn new ( shapes : Vec<Rect>, obstacles : Vec<Rect>, bounds : Rect) -> Self {
 
         Finder {

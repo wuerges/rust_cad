@@ -5,13 +5,13 @@ use crate::priorityqueue::*;
 use std::rc::Rc;
 
 
-pub struct RTreeQueue<T> {
+pub struct RTreeQueue<'a, T> {
     center : Rect,
     // rtree : Rc<RTreeImpl<T>>,
-    queue : PriorityQueue<u32, Rc<RTreeImpl<T>>>
+    queue : PriorityQueue<u32, &'a RTreeImpl<'a, T>>
 }
 
-impl<T: Copy> RTreeQueue<T> {
+impl<'a, T: Copy> RTreeQueue<'a,T> {
 
     pub fn new(cent : Rect, qu : Rc<RTreeImpl<T>>) -> Self {
         let mut q = PriorityQueue::new();
