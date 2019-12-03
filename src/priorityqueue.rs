@@ -167,4 +167,13 @@ mod tests {
         }
         return count == psize;
     }
+
+    #[test]
+    fn insert_1000_000_elements() {
+        let mut q = PriorityQueue::<i32, ()>::new();
+
+        for x in 0..1_000_000 {
+            q.push(x, ());
+        }
+    }
 }
