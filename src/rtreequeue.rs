@@ -116,24 +116,24 @@ mod tests {
         return rlen == count;
     }
     
-    #[test]
-    fn insert_180000() {
-        let t0 = RTree::empty();
+    // #[test]
+    // fn insert_180000() {
+    //     let t0 = RTree::empty();
 
-        let r1 = Rect::build_unsafe([897125487, 825057424, 716138779], [3253067062, 2391459330, 3751124909]);
+    //     let r1 = Rect::build_unsafe([897125487, 825057424, 716138779], [3253067062, 2391459330, 3751124909]);
 
         
-        let tree = (0..180000).fold(t0, |t,i| t.insert(r1, i));
-        let mut qu = RTreeQueue::new(r1, &tree);
+    //     let tree = (0..180000).fold(t0, |t,i| t.insert(r1, i));
+    //     let mut qu = RTreeQueue::new(r1, &tree);
 
-        loop {
-            match qu.pop() {
-                None => break,
-                Some(x) => println!("deque: {:?}", x),
-            }
-        }
+    //     loop {
+    //         match qu.pop() {
+    //             None => break,
+    //             Some(x) => println!("deque: {:?}", x),
+    //         }
+    //     }
 
-        assert_eq!(tree.len(), 180000);
-    }
+    //     assert_eq!(tree.len(), 180000);
+    // }
 
 }

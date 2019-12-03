@@ -8,7 +8,7 @@ use crate::muf::*;
 use crate::astar::*;
 use std::rc::Rc;
 
-struct RTQ { u : usize, rtq : RTreeQueue<usize> }
+struct RTQ<'a> { u : usize, rtq : RTreeQueue<'a, usize> }
 
 pub struct Finder {
     shape_index : RTree<usize>,
@@ -45,7 +45,7 @@ impl Finder {
             // let z = RTreeQueue::new(*u_rect, Rc::clone(&self.shape_index.0));
             // let mut z = ;
 
-            let mut q = Box::new(RTQ{ u, rtq : RTreeQueue::new(*u_rect, Rc::clone(&self.shape_index.0)) });
+            let mut q = Box::new(RTQ{ u, rtq : RTreeQueue::new(*u_rect, &self.shape_index) });
 
             // while q.rtq.peek() == 0 {
 
