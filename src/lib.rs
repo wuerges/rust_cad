@@ -6,10 +6,10 @@ extern crate quickcheck_macros;
 
 pub mod geometry;
 pub mod rtree;
-pub mod rtreequeue;
-pub mod priorityqueue;
-pub mod graph;
-pub mod muf;
-pub mod locationfinder;
-pub mod astar;
-pub mod parser;
+// pub mod rtreequeue;
+// pub mod priorityqueue;
+// pub mod graph;
+// pub mod muf;
+// pub mod locationfinder;
+// pub mod astar;
+// pub mod parser;
