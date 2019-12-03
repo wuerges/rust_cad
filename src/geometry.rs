@@ -128,7 +128,7 @@ mod tests {
     impl Arbitrary for Pt32 {
 
         fn arbitrary<G: Gen>(g : &mut G) -> Self {
-            let v : [u32; 3]= [g.next_u32(), g.next_u32(),g.next_u32()];
+            let v : [u32; 3]= [g.next_u32() % 180000, g.next_u32() % 180000,g.next_u32() % 180000];
             return Pt32(v);
         }
     
