@@ -124,13 +124,14 @@ impl<T: Copy> RTree<T> {
 
             let a1 = r1.mbr(&bb).area() - r1.area();
             let a2 = r2.mbr(&bb).area() - r2.area();
+            return std::cmp::min(a1, a2);
 
-            if a1 < a2 {
-                return a1 as u64;
-            }
-            else {
-                return a2 as u64;
-            }
+            // if a1 < a2 {
+            //     return a1 as u64;
+            // }
+            // else {
+            //     return a2 as u64;
+            // }
         });
 
 
@@ -138,11 +139,11 @@ impl<T: Copy> RTree<T> {
         subtrees.into_iter().for_each( |t| {
             let bb = t.bb();
 
-            if left.len() > 6 {
+            if left.len() > 4 {
                 right.push(t);
                 r2 = r2.mbr(&bb);
             }
-            else if right.len() > 6 {
+            else if right.len() > 4 {
                 r1 = r1.mbr(&bb);
                 left.push(t);
             }
