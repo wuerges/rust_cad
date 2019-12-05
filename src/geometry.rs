@@ -53,7 +53,7 @@ impl Rect {
     pub fn area(&self) -> f64 {
 
         // let mut area = 1.0;
-        // for i in 0..3 {
+        // for i in 0..2 {
         //     area *= (self.p1[i] as f64 - (1+self.p2[i]) as f64).abs();
         // }
         // return area;

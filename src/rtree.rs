@@ -115,13 +115,31 @@ impl<T: Copy> RTree<T> {
         }
 
         // partitions the node according to the selected rects.
-        let (mut left, mut right) : (Vec<_>, Vec<_>)= subtrees.into_iter().partition( |t| {
-            
-            let a1 = r1.mbr(&t.bb()).area();
-            let a2 = r2.mbr(&t.bb()).area();
-            
-            return a1 < a2;
+
+        let mut left = Vec::new();
+        let mut right = Vec::new();
+
+        subtrees.into_iter().for_each(|t| {
+            let bb = t.bb();
+
+            if r1.mbr(&bb).area() - r1.area() >  r2.mbr(&bb).area() - r2.area() {
+                right.push(t);
+                r2 = r2.mbr(&bb);
+            }
+            else {
+                r1 = r1.mbr(&bb);
+                left.push(t);
+            }
         });
+
+
+        // let (mut left, mut right) : (Vec<_>, Vec<_>)= subtrees.into_iter().partition( |t| {
+            
+        //     let a1 = r1.mbr(&t.bb()).area();
+        //     let a2 = r2.mbr(&t.bb()).area();
+            
+        //     return a1 < a2;
+        // });
 
         if left.is_empty() {
             left.push(right.pop().unwrap());

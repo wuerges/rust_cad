@@ -41,9 +41,9 @@ impl<'a, T: Copy> RTreeQueue<'a, T> {
     }
 
     pub fn pop(&mut self) -> T {
-        let mut count = 0;
+        // let mut count = 0;
         loop {
-            count += 1;
+            // count += 1;
             let x = self.queue.pop().unwrap();
             
             // match x {
@@ -53,7 +53,7 @@ impl<'a, T: Copy> RTreeQueue<'a, T> {
                         RTree::Sent => {
                         },
                         RTree::Leaf(_, data) => {
-                            println!("count = {:?}", count);
+                            // println!("count = {:?}", count);
                             return *data;
                         },
                         RTree::Child(_, child) => {
