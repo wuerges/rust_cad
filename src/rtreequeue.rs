@@ -40,7 +40,7 @@ impl<'a, T: Copy> RTreeQueue<'a, T> {
         return self.queue.peek().unwrap_or(std::u32::MAX);
     }
 
-    pub fn pop(&mut self) -> Option<T> {
+    pub fn pop(&mut self) -> Option<&'a T> {
         
         loop {
             let x = self.queue.pop();
@@ -48,11 +48,11 @@ impl<'a, T: Copy> RTreeQueue<'a, T> {
             match x {
                 None => return None,
                 Some(tree) => {
-                    match tree.value {
+                    match tree {
                         RTree::Sent => {
                         },
                         RTree::Leaf(_, data) => {
-                            return Some(*data);
+                            return Some(data);
                         },
                         RTree::Child(_, child) => {
                             for c in child {
@@ -107,7 +107,8 @@ mod tests {
 
         let mut count = 0;
         loop {
-            match qu.pop() {
+            let z = qu.pop();
+            match z {
                 None => break,
                 Some(x) => count += 1,
             }
@@ -116,24 +117,41 @@ mod tests {
         return rlen == count;
     }
     
-    // #[test]
-    // fn insert_180000() {
-    //     let t0 = RTree::empty();
-
-    //     let r1 = Rect::build_unsafe([897125487, 825057424, 716138779], [3253067062, 2391459330, 3751124909]);
-
+    #[test]
+    fn insert_180000() {
         
-    //     let tree = (0..180000).fold(t0, |t,i| t.insert(r1, i));
-    //     let mut qu = RTreeQueue::new(r1, &tree);
+        use rand::{RngCore};
+        let mut rng = rand::thread_rng();
+        
+        let rects : Vec<_> = (0..180000).map( |_| Rect::build(
+            [rng.next_u32()  % 180000, rng.next_u32()  % 180000, rng.next_u32()  % 180000], 
+            [rng.next_u32()  % 180000, rng.next_u32()  % 180000, rng.next_u32()  % 180000])).collect();
+            
+        let t0 = RTree::empty();
+        let tree = rects.iter().fold(t0, |t,r| t.insert(*r, r));
+        let mut qu = RTreeQueue::new(rects[0], &tree);
 
-    //     loop {
-    //         match qu.pop() {
-    //             None => break,
-    //             Some(x) => println!("deque: {:?}", x),
-    //         }
-    //     }
 
-    //     assert_eq!(tree.len(), 180000);
-    // }
+        let mut popped = Vec::new();
+
+        loop {
+            {
+                let z = qu.pop();
+                match z {
+                    None => break,
+                    Some(x) => popped.push(x),
+                }
+            }
+        }
+
+        for i in 1..popped.len() {
+
+            assert!(popped[i].distance(&rects[0]) >= popped[i-1].distance(&rects[0]));
+
+            println!("distance = {:?}", popped[i].distance(&rects[0]));
+        }
+
+        assert_eq!(tree.len(), 180000);
+    }
 
 }
