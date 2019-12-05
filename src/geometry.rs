@@ -51,8 +51,16 @@ impl Rect {
     }
 
     pub fn area(&self) -> f64 {
+
+        // let mut area = 1.0;
+        // for i in 0..3 {
+        //     area *= (self.p1[i] as f64 - (1+self.p2[i]) as f64).abs();
+        // }
+        // return area;
+
+
         return zip_pt_with(self.p1, self.p2, 
-            &|e1,e2| (e1 as f64 - e2 as f64).abs())
+            &|e1,e2| (e1 as f64 - (1+e2) as f64).abs())
             .iter()
             .fold(1.0, |m,i| m*i);
     }
@@ -165,6 +173,21 @@ mod tests {
                x[0] >= p2[0] && x[1] >= p2[1] && x[2] >= p2[2] ;
     }
 
+
+    #[test] 
+    fn test_some_distances() {
+        let r1 = Rect::build([0,0,1], [1,1,1]);
+        let r2 = Rect::build([4,0,2], [5,2,2]);
+        let r3 = Rect::build([3,3,3], [5,8,3]);
+
+        println!("distance {:?} {:?} = {:?}", r1, r2, r1.distance(&r2));
+        println!("distance {:?} {:?} = {:?}", r1, r3, r1.distance(&r3));
+        println!("distance {:?} {:?} = {:?}", r2, r3, r2.distance(&r3));
+
+        println!("area {:?} = {:?}", r1, r1.area());
+        println!("area {:?} = {:?}", r2, r2.area());
+        println!("area {:?} = {:?}", r3, r3.area());
+    }
 }
 
 // #[cfg(test)]
