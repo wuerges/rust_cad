@@ -50,7 +50,7 @@ impl Rect {
         return Rect { p1 : p1n, p2 : p2n };
     }
 
-    pub fn area(&self) -> f64 {
+    pub fn area(&self) -> i64 {
 
         // let mut area = 1.0;
         // for i in 0..2 {
@@ -60,9 +60,9 @@ impl Rect {
 
 
         return zip_pt_with(self.p1, self.p2, 
-            &|e1,e2| (e1 as f64 - (1+e2) as f64).abs())
+            &|e1,e2| (e1 as i64 - (1+e2) as i64).abs())
             .iter()
-            .fold(1.0, |m,i| m*i);
+            .fold(1, |m,i| m*i);
     }
 
     pub fn distance(&self, other : &Rect) -> u32 {

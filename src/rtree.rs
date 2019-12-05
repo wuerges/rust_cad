@@ -95,13 +95,13 @@ impl<T: Copy> RTree<T> {
     }
     
 
-    fn split_subtrees_imut_2(subtrees : Vec<RTree<T>>) -> (RTree<T>, RTree<T>) {
+    fn split_subtrees_imut_2(mut subtrees : Vec<RTree<T>>) -> (RTree<T>, RTree<T>) {
 
         // Chooses the best rects for the subtrees using O(n^2)
         let recs : Vec<Rect> = subtrees.iter().map( |t| t.bb() ).collect();
         let mut r1 = recs[0];
         let mut r2 = recs[1];
-        let mut area = 0.0;
+        let mut area = 0;
 
         for i in 0..recs.len() {
             for j in (i+1)..recs.len() {
@@ -119,10 +119,34 @@ impl<T: Copy> RTree<T> {
         let mut left = Vec::new();
         let mut right = Vec::new();
 
-        subtrees.into_iter().for_each(|t| {
+        subtrees.sort_by_cached_key( |t| {
             let bb = t.bb();
 
-            if r1.mbr(&bb).area() - r1.area() >  r2.mbr(&bb).area() - r2.area() {
+            let a1 = r1.mbr(&bb).area() - r1.area();
+            let a2 = r2.mbr(&bb).area() - r2.area();
+
+            if a1 < a2 {
+                return a1 as u64;
+            }
+            else {
+                return a2 as u64;
+            }
+        });
+
+
+
+        subtrees.into_iter().for_each( |t| {
+            let bb = t.bb();
+
+            if left.len() > 6 {
+                right.push(t);
+                r2 = r2.mbr(&bb);
+            }
+            else if right.len() > 6 {
+                r1 = r1.mbr(&bb);
+                left.push(t);
+            }
+            else if r1.mbr(&bb).area() - r1.area() >  r2.mbr(&bb).area() - r2.area() {
                 right.push(t);
                 r2 = r2.mbr(&bb);
             }
@@ -189,10 +213,10 @@ impl<T: Copy> RTree<T> {
                 subtrees.sort_by(
                     |t1, t2| 
                     {
-                        let x : f64 = bb.mbr(&t1.bb()).area() - bb.area();
-                        let y : f64 = bb.mbr(&t2.bb()).area() - bb.area();
+                        let x = bb.mbr(&t1.bb()).area() - bb.area();
+                        let y = bb.mbr(&t2.bb()).area() - bb.area();
 
-                        return x.partial_cmp(&y).unwrap_or(std::cmp::Ordering::Equal).reverse();
+                        return x.cmp(&y);
                     }
                 );
 

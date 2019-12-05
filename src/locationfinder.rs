@@ -85,7 +85,9 @@ impl Finder {
                     num_edges += 1;
                 }
             }
-            // println!("initializing vertices {:?}/{:?} pops = {:?}", count, vertices.len(), pops);
+            if count % 100 == 0 {
+                println!("initializing vertices {:?}/{:?} pops = {:?}", count, vertices.len(), pops);
+            }
             rtq_q.push(q.rtq.peek(), q);
         }
 
