@@ -61,6 +61,8 @@ impl Finder {
 
         println!("rtq ok");
 
+        println!("index size = {:?}   index height = {:?}   max height = {:?}", self.shapes.len(), self.shape_index.height(), self.shape_index.max_height());
+
         let mut rtq_q = PriorityQueue::<u32, &mut RTQ>::new();
         
         let mut count = 0;

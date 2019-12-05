@@ -79,6 +79,20 @@ impl<T: Copy> RTree<T> {
             }
         }
     }
+
+    pub fn max_height(&self) -> i32 {
+        match self {
+            RTree::Sent => 0,
+            RTree::Leaf(_,_) => 1,
+            RTree::Child(_, child) => {
+                let h1 = child[0].height();
+
+                return 1 + child.iter()
+                        .map( |c| c.height())
+                        .fold(h1, |h,hi| std::cmp::max(h, hi) );
+            }
+        }
+    }
     
 
     fn split_subtrees_imut_2(subtrees : Vec<RTree<T>>) -> (RTree<T>, RTree<T>) {
@@ -101,22 +115,25 @@ impl<T: Copy> RTree<T> {
         }
 
         // partitions the node according to the selected rects.
-        let mut count = 0;
-        let (left, right) : (Vec<_>, Vec<_>)= subtrees.into_iter().partition( |t| {
+        let (mut left, mut right) : (Vec<_>, Vec<_>)= subtrees.into_iter().partition( |t| {
             
             let a1 = r1.mbr(&t.bb()).area();
             let a2 = r2.mbr(&t.bb()).area();
             
-            if a1 == a2 {
-                count += 1;
-                return count % 2 == 0;
-            }
             return a1 < a2;
         });
+
+        if left.is_empty() {
+            left.push(right.pop().unwrap());
+        }
+        if right.is_empty() {
+            right.push(left.pop().unwrap());
+        }
 
         let bb1 = left.iter()
             .map(|i| i.bb())
             .fold(left[0].bb(), |sum, i| sum.mbr(&i));
+
         let bb2 = right.iter()
             .map(|i| i.bb())
             .fold(right[0].bb(), |sum, i| sum.mbr(&i));
@@ -154,8 +171,9 @@ impl<T: Copy> RTree<T> {
                 subtrees.sort_by(
                     |t1, t2| 
                     {
-                        let x : f64 = bb.mbr(&t1.bb()).area();
-                        let y : f64 = bb.mbr(&t2.bb()).area();
+                        let x : f64 = bb.mbr(&t1.bb()).area() - bb.area();
+                        let y : f64 = bb.mbr(&t2.bb()).area() - bb.area();
+
                         return x.partial_cmp(&y).unwrap_or(std::cmp::Ordering::Equal).reverse();
                     }
                 );
