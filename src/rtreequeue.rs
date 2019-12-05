@@ -25,7 +25,7 @@ impl<'a, T: Copy> RTreeQueue<'a, T> {
     }
 
     pub fn push(&mut self, tree: &'a RTree<T>) {
-        match *tree {
+        match tree {
             RTree::Sent => {},
             RTree::Leaf(rect, _) => {
                 self.queue.push(rect.distance(&self.center), tree);
@@ -40,19 +40,21 @@ impl<'a, T: Copy> RTreeQueue<'a, T> {
         return self.queue.peek().unwrap_or(std::u32::MAX);
     }
 
-    pub fn pop(&mut self) -> Option<&'a T> {
-        
+    pub fn pop(&mut self) -> T {
+        let mut count = 0;
         loop {
-            let x = self.queue.pop();
-
-            match x {
-                None => return None,
-                Some(tree) => {
-                    match tree {
+            count += 1;
+            let x = self.queue.pop().unwrap();
+            
+            // match x {
+                // None => return None,
+                // Some(tree) => {
+                    match x {
                         RTree::Sent => {
                         },
                         RTree::Leaf(_, data) => {
-                            return Some(data);
+                            println!("count = {:?}", count);
+                            return *data;
                         },
                         RTree::Child(_, child) => {
                             for c in child {
@@ -60,8 +62,8 @@ impl<'a, T: Copy> RTreeQueue<'a, T> {
                             }
                         }
                     }
-                }
-            }
+                // }
+            // }
         }
     }
 }
@@ -107,11 +109,11 @@ mod tests {
 
         let mut count = 0;
         loop {
-            let z = qu.pop();
-            match z {
-                None => break,
-                Some(x) => count += 1,
+            if qu.is_empty() {
+                break;
             }
+            let z = qu.pop();
+            count += 1;
         }
 
         return rlen == count;
@@ -135,13 +137,11 @@ mod tests {
         let mut popped = Vec::new();
 
         loop {
-            {
-                let z = qu.pop();
-                match z {
-                    None => break,
-                    Some(x) => popped.push(x),
-                }
+            if qu.is_empty() {
+                break;
             }
+            let z = qu.pop();
+            popped.push(z);
         }
 
         for i in 1..popped.len() {

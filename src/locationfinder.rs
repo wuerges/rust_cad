@@ -38,48 +38,54 @@ impl Finder {
         // let mut rtq_q = PriorityQueue::<u32, Box<RTQ>>::new();
         let mut route_q = PriorityQueue::<u32, (usize, usize, Route)>::new();
 
-        // let mut rtq_vec : Vec<_> = vertices.iter().enumerate().map( |(u, u_rect)| {
-        //     RTQ{ u : u, rtq : RTreeQueue::new(*u_rect, &self.shape_index)}
-        // }).collect();
+        let mut rtq_vec : Vec<_> = vertices.iter().enumerate().map( |(u, u_rect)| {
+            RTQ{ u : u, rtq : RTreeQueue::new(*u_rect, &self.shape_index)}
+        }).collect();
 
 
-        let mut count = 0;
-        for (u, u_rect) in vertices.iter().enumerate() {
-            count += 1;
-            let mut pops = 0;
+        // let mut count = 0;
+        // for (u, u_rect) in vertices.iter().enumerate() {
+        //     count += 1;
+        //     let mut pops = 0;
 
-            let mut qu = RTreeQueue::new(*u_rect, &self.shape_index);
-            let v = qu.pop();
-            let v = qu.pop();
-            let v = qu.pop();
-            let v = qu.pop();
+        //     let mut qu = RTreeQueue::new(*u_rect, &self.shape_index);
+        //     let v = qu.pop();
+        //     let v = qu.pop();
+        //     let v = qu.pop();
+        //     let v = qu.pop();
 
 
-            // println!("initializing vertices {:?}/{:?} pops = {:?}", count, vertices.len(), pops);
+        //     // println!("initializing vertices {:?}/{:?} pops = {:?}", count, vertices.len(), pops);
 
-        }
+        // }
 
         println!("rtq ok");
 
         let mut rtq_q = PriorityQueue::<u32, &mut RTQ>::new();
-        // let mut count = 0;
-        // for q in &mut rtq_vec {
+        
+        let mut count = 0;
 
+        for q in &mut rtq_vec {
             
-        //     count += 1;
-            
-        //     let mut pops = 0;
-        //     while q.rtq.peek() == 0 {
-        //         pops += 1;
-        //         let v = q.rtq.pop().unwrap();
-        //         if muf.find(q.u) != muf.find(v) {
-        //             muf.union(q.u, v);
-        //             num_edges += 1;
-        //         }
-        //     }
-        //     println!("initializing vertices {:?}/{:?} pops = {:?}", count, vertices.len(), pops);
-        //     rtq_q.push(q.rtq.peek(), q);
-        // }
+            count += 1;
+            let mut pops = 0;
+
+            while q.rtq.peek() == 0 {
+                pops += 1;
+                if pops > 10 {
+                    break;
+                }
+                // q.rtq.push( &self.shape_index)
+                let v = q.rtq.pop();
+                // let v = &1;
+                if muf.find(q.u) != muf.find(v) {
+                    muf.union(q.u, v);
+                    num_edges += 1;
+                }
+            }
+            println!("initializing vertices {:?}/{:?} pops = {:?}", count, vertices.len(), pops);
+            rtq_q.push(q.rtq.peek(), q);
+        }
 
 
 
