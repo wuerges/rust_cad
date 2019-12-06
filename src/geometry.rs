@@ -60,7 +60,7 @@ impl Rect {
 
 
         return zip_pt_with(self.p1, self.p2, 
-            &|e1,e2| (e1 as i64 - (1+e2) as i64).abs())
+            &|e1,e2| std::cmp::max(1, (e1 as i64 - e2 as i64).abs()))
             .iter()
             .fold(1, |m,i| m*i);
     }
