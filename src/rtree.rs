@@ -93,7 +93,47 @@ impl<T: Copy> RTree<T> {
             }
         }
     }
-    
+
+
+    fn pick_from_subtrees(
+        r1 : &mut Rect, 
+        r2 : &mut Rect, 
+        left : &mut Vec<RTree<T>>,
+        right : &mut Vec<RTree<T>>,
+        subtrees : &mut Vec<RTree<T>>
+    ) {
+        
+        subtrees.sort_by_key( |t| {
+            let r1_ = t.bb().mbr(&r1);
+            let r2_ = t.bb().mbr(&r2);
+
+            return std::cmp::min(
+                r1_.area() - r1.area(),
+                r2_.area() - r2.area()
+            );
+        });
+        
+        let h = subtrees.pop().unwrap();
+
+
+        if left.len() > 4 {
+            *r2 = h.bb().mbr(r2);
+            right.push(h);
+        }
+        else if right.len() > 4 {
+            *r1 = h.bb().mbr(r1);
+            left.push(h);
+        }
+        else if h.bb().mbr(r1).area() - r1.area() 
+         < h.bb().mbr(r2).area() - r2.area() {
+            *r1 = h.bb().mbr(r1);
+            left.push(h);
+        }
+        else {
+            *r2 = h.bb().mbr(r2);
+            right.push(h);
+        }
+    }
 
     fn split_subtrees_imut_2(mut subtrees : Vec<RTree<T>>) -> (RTree<T>, RTree<T>) {
 
@@ -119,43 +159,43 @@ impl<T: Copy> RTree<T> {
         let mut left = Vec::new();
         let mut right = Vec::new();
 
-        subtrees.sort_by_cached_key( |t| {
-            let bb = t.bb();
+        // subtrees.sort_by_cached_key( |t| {
+        //     let bb = t.bb();
 
-            let a1 = r1.mbr(&bb).area() - r1.area();
-            let a2 = r2.mbr(&bb).area() - r2.area();
-            return std::cmp::min(a1, a2);
+        //     let a1 = r1.mbr(&bb).area() - r1.area();
+        //     let a2 = r2.mbr(&bb).area() - r2.area();
+        //     return std::cmp::min(a1, a2);
 
-            // if a1 < a2 {
-            //     return a1 as u64;
-            // }
-            // else {
-            //     return a2 as u64;
-            // }
-        });
+        //     // if a1 < a2 {
+        //     //     return a1 as u64;
+        //     // }
+        //     // else {
+        //     //     return a2 as u64;
+        //     // }
+        // });
 
 
 
-        subtrees.into_iter().for_each( |t| {
-            let bb = t.bb();
+        // subtrees.into_iter().for_each( |t| {
+        //     let bb = t.bb();
 
-            if left.len() > 4 {
-                right.push(t);
-                r2 = r2.mbr(&bb);
-            }
-            else if right.len() > 4 {
-                r1 = r1.mbr(&bb);
-                left.push(t);
-            }
-            else if r1.mbr(&bb).area() - r1.area() >  r2.mbr(&bb).area() - r2.area() {
-                right.push(t);
-                r2 = r2.mbr(&bb);
-            }
-            else {
-                r1 = r1.mbr(&bb);
-                left.push(t);
-            }
-        });
+        //     if left.len() > 4 {
+        //         right.push(t);
+        //         r2 = r2.mbr(&bb);
+        //     }
+        //     else if right.len() > 4 {
+        //         r1 = r1.mbr(&bb);
+        //         left.push(t);
+        //     }
+        //     else if r1.mbr(&bb).area() - r1.area() >  r2.mbr(&bb).area() - r2.area() {
+        //         right.push(t);
+        //         r2 = r2.mbr(&bb);
+        //     }
+        //     else {
+        //         r1 = r1.mbr(&bb);
+        //         left.push(t);
+        //     }
+        // });
 
 
         // let (mut left, mut right) : (Vec<_>, Vec<_>)= subtrees.into_iter().partition( |t| {
@@ -166,23 +206,28 @@ impl<T: Copy> RTree<T> {
         //     return a1 < a2;
         // });
 
-        if left.is_empty() {
-            left.push(right.pop().unwrap());
+        // if left.is_empty() {
+        //     left.push(right.pop().unwrap());
+        // }
+        // if right.is_empty() {
+        //     right.push(left.pop().unwrap());
+        // }
+
+        // let bb1 = left.iter()
+        //     .map(|i| i.bb())
+        //     .fold(left[0].bb(), |sum, i| sum.mbr(&i));
+
+        // let bb2 = right.iter()
+        //     .map(|i| i.bb())
+        //     .fold(right[0].bb(), |sum, i| sum.mbr(&i));
+
+        // return (RTree::Child(bb1, left), RTree::Child(bb2, right));
+
+        while !subtrees.is_empty() {
+           
+            RTree::pick_from_subtrees(&mut r1, &mut r2, &mut left, &mut right, &mut subtrees);
         }
-        if right.is_empty() {
-            right.push(left.pop().unwrap());
-        }
-
-        let bb1 = left.iter()
-            .map(|i| i.bb())
-            .fold(left[0].bb(), |sum, i| sum.mbr(&i));
-
-        let bb2 = right.iter()
-            .map(|i| i.bb())
-            .fold(right[0].bb(), |sum, i| sum.mbr(&i));
-
-        return (RTree::Child(bb1, left), RTree::Child(bb2, right));
-
+        return (RTree::Child(r1, left), RTree::Child(r2, right));
     }
 
     pub fn insert(self, r : Rect, v : T) -> RTree<T> {
