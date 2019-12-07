@@ -116,11 +116,11 @@ impl<T: Copy> RTree<T> {
         let h = subtrees.pop().unwrap();
 
 
-        if left.len() > 2 {
+        if left.len() > 4 {
             *r2 = h.bb().mbr(r2);
             right.push(h);
         }
-        else if right.len() > 2 {
+        else if right.len() > 4 {
             *r1 = h.bb().mbr(r1);
             left.push(h);
         }
@@ -275,7 +275,7 @@ impl<T: Copy> RTree<T> {
                         subtrees.push(one);
                         subtrees.push(two);
                         
-                        if subtrees.len() < 4 {
+                        if subtrees.len() < 8 {
                             return Ins::NoSplit(RTree::Child(new_bb, subtrees));
                         }
                         else {
