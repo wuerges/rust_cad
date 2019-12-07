@@ -14,7 +14,7 @@ struct Index([usize; 3]);
 type Coords = [Vec<u32>; 3];
 
 pub struct AStar<'a> {
-    obstacle_index : &'a  RTree<u32>,
+    obstacle_index : &'a  RTree<usize>,
     boundary : Rect,
     source : Rect,
     target : Rect,
@@ -23,7 +23,7 @@ pub struct AStar<'a> {
 
 impl<'a> AStar<'a> {
 
-    pub fn new(obstacle_index : &'a RTree<u32>, s :Rect, t:Rect, bound : Rect ) -> Self {
+    pub fn new(obstacle_index : &'a RTree<usize>, s :Rect, t:Rect, bound : Rect ) -> Self {
         let mut a = AStar {
             obstacle_index : obstacle_index,
             boundary : bound,
@@ -103,6 +103,10 @@ impl<'a> AStar<'a> {
                     for v in self.neighbors(&u) {
                         let v_pt = self.make_point(v);
 
+                        if self.obstacle_index.hits(Rect::build(u_pt, v_pt)) {
+                            continue;
+                        }
+
                         let w = if self.source.distance_point(&v_pt) == 0 {
                             0
                         } else {
@@ -175,6 +179,7 @@ pub fn astar(
     obstacle_index : &RTree<usize>,
     boundary: Rect) -> Route
 {
+    let path = AStar::new(obstacle_index, u, v, boundary).run();
     return Route {
         length : u.distance(&v),
         path : Vec::new()
