@@ -9,6 +9,7 @@ extern crate quickcheck_macros;
 extern crate rand;
 
 extern crate typed_arena;
+extern crate simplesvg;
 
 pub mod geometry;
 pub mod rtree;
@@ -19,3 +20,4 @@ pub mod muf;
 pub mod locationfinder;
 pub mod astar;
 pub mod parser;
+pub mod rtreedraw;
