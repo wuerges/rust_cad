@@ -107,10 +107,10 @@ impl<T: Copy> RTree<T> {
             let r1_ = t.bb().mbr(&r1);
             let r2_ = t.bb().mbr(&r2);
 
-            return std::cmp::min(
+            return -(std::cmp::min(
                 r1_.area() - r1.area(),
                 r2_.area() - r2.area()
-            );
+            ));
         });
         
         let h = subtrees.pop().unwrap();
