@@ -24,6 +24,15 @@ fn dist1d(a :u32, b:u32, aw:u32, bw: u32) -> u32 {
     }
 }
 
+pub fn manhatan(p1 : Pt, p2 : Pt) -> u32 {
+    let mut r = 0;
+    for i in 0..3 {
+        use std::cmp::*;
+        r += max(p1[0], p2[0]) - min(p1[0], p2[0]);
+    }  
+    return r;  
+}
+
 impl Rect {
 
     pub fn build(p1 : Pt, p2 :Pt) -> Rect {
@@ -71,21 +80,24 @@ impl Rect {
 
         for i in 0..3 {
 
-            let diff_self = if self.p1[i] > self.p2[i] { 
-                self.p1[i] - self.p2[i] 
-            } 
-            else { 
-                self.p2[i] - self.p1[i] 
-            };
-
-            let diff_other = if other.p1[i] > other.p2[i] { 
-                other.p1[i] - other.p2[i] 
-            } 
-            else { 
-                other.p2[i] - other.p1[i] 
-            };
+            let diff_self = self.p2[i] - self.p1[i];
+            let diff_other = other.p2[i] - other.p1[i];
 
             sum += dist1d(self.p1[i], other.p1[i], diff_self, diff_other);
+        }
+
+        return sum;
+    }
+
+    pub fn distance_point(&self, other : &Pt) -> u32 {
+
+        let mut sum : u32 = 0;
+
+        for i in 0..3 {
+
+            let diff_self = self.p2[i] - self.p1[i] ;
+
+            sum += dist1d(self.p1[i], other[i], diff_self, 0);
         }
 
         return sum;
@@ -108,6 +120,24 @@ impl Rect {
     pub fn mbr(&self, other : &Rect) -> Rect {
         return Rect::build_unsafe(minpt(self.p1, other.p1), maxpt(self.p2, other.p2));
     }
+
+    pub fn closest_point(&self, other : &Rect) -> Pt {
+        let mut pt = [0,0,0];
+        for i in 0..3 {
+            pt[i] = closest_point(
+                self.p1[i], self.p2[i] - self.p1[i],
+                other.p1[i]
+            );
+        }
+        return pt;
+    }
+}
+
+fn closest_point(a : u32, aw: u32, b :u32) -> u32 {
+    if a <= b {
+        return std::cmp::min(a+aw, b);
+    }    
+    return a;
 }
 
 fn zip_pt_with<U : Copy, V : Copy, T>(p1 : [U; 3], p2 : [V; 3], f : &dyn Fn(U, V) -> T) -> [T; 3] {

@@ -57,6 +57,9 @@ impl<K :Ord +Copy, V> PriorityQueue<K, V> {
             }
         }
     }
+    pub fn is_empty(&self) -> bool {
+        return self.data.is_empty();
+    } 
 
     pub fn push(&mut self, key: K, value:  V) {
         self.data.push(Item{ key : key, value : value});

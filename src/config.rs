@@ -1,0 +1,1 @@
+pub const WINDOW_SIZE : u32 = 100;

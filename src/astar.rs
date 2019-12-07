@@ -1,12 +1,16 @@
 use crate::geometry::*;
 use crate::rtree::*;
+use crate::priorityqueue::*;
+use std::collections::HashMap;
 
-pub struct Route { 
-    pub length : u32, 
-    pub path : Vec<Pt> 
+pub struct Route {
+    pub length : u32,
+    pub path : Vec<Pt>
 }
 
-type Index = [usize; 3];
+#[derive(Hash,Eq,PartialEq, Debug, Copy, Clone)]
+struct Index([usize; 3]);
+
 type Coords = [Vec<u32>; 3];
 
 pub struct AStar<'a> {
@@ -31,7 +35,7 @@ impl<'a> AStar<'a> {
         a.add_shape(t);
 
         let window = s.mbr(&t).expand(crate::config::WINDOW_SIZE);
-        
+
         obstacle_index.search_with_key(&window, &mut |key,_| {
             a.add_shape(key.expand(1));
             return true;
@@ -58,26 +62,106 @@ impl<'a> AStar<'a> {
         }
     }
 
-    fn find_point(&self, p : Pt) -> Index 
+    fn find_index(&self, p : Pt) -> Index
     {
-        let mut x : Index = [0,0,0];
+        let mut x = Index([0,0,0]);
         for i in 0..3 {
-            x[i] = self.coords[i].binary_search(&p[i]).unwrap();
+            x.0[i] = self.coords[i].binary_search(&p[i]).unwrap();
         }
         return x;
     }
 
     fn make_point(&self, idx :Index) -> Pt {
-        [ self.coords[0][idx[0]]
-        , self.coords[1][idx[1]]
-        , self.coords[2][idx[2]] ]
+        [ self.coords[0][idx.0[0]]
+        , self.coords[1][idx.0[1]]
+        , self.coords[2][idx.0[2]] ]
     }
 
     pub fn run(&self) -> Vec<Pt> {
         const INF : u32 = 1e9 as u32;
 
+        let mut queue = PriorityQueue::new();
+        let mut dist : HashMap<Index, u32> = HashMap::new();
+        let mut pred : HashMap<Index, Index> = HashMap::new();
+
         let start = self.source.closest_point(&self.target);
-        return Vec::new();
+
+        let s = self.find_index(start);
+        dist.insert(s, 0);
+        queue.push(0, s);
+        
+        let mut t = Index([0,0,0]);
+        loop {
+            match queue.pop() {
+                None => break,
+                Some(u) => {
+                    let u_pt = self.make_point(u);
+                    if self.target.distance_point(&u_pt) == 0 {
+                        t = u;
+                        break;
+                    }
+                    for v in self.neighbors(&u) {
+                        let v_pt = self.make_point(v);
+
+                        let w = if self.source.distance_point(&v_pt) == 0 {
+                            0
+                        } else {
+                            manhatan(u_pt, v_pt)
+                        };
+
+                        let a_star_heuristic = self.target.distance_point(&v_pt);
+
+                        let old_w = *dist.get(&v).unwrap_or(&INF);
+                        let new_w = dist.get(&u).unwrap_or(&INF) + w;
+
+                        if old_w > new_w {
+                            dist.insert(v, new_w);
+                            pred.insert(v, u);
+                            queue.push(new_w+a_star_heuristic, v);
+                        }
+                    }
+                }
+            }
+        }
+
+        let mut path = Vec::new();
+
+        loop {
+            let pt = self.make_point(t);
+            path.push(pt);
+            if self.source.distance_point(&pt) == 0 {
+                break;
+            }
+            t = pred[&t];
+        }
+
+        return path;
+    }
+
+    fn neighbors(&self, idx : &Index) -> Vec<Index> {
+        let mut v = Vec::new();
+
+        let Index([x,y,z]) = *idx;
+
+        if x > 0 {
+            v.push(Index([x-1, y, z]));
+        }
+        if x < self.coords[0].len()-1 {
+            v.push(Index([x+1, y, z]));
+        }
+        if y > 0 {
+            v.push(Index([x, y-1, z]));
+        }
+        if y < self.coords[1].len()-1 {
+            v.push(Index([x, y+1, z]));
+        }
+        if z > 0 {
+            v.push(Index([x, y, z-1]));
+        }
+        if z < self.coords[2].len()-1 {
+            v.push(Index([x, y, z+1]));
+        }
+        return v;
     }
 
 
@@ -85,11 +169,11 @@ impl<'a> AStar<'a> {
 
 
 pub fn astar(
-    u : Rect, 
+    u : Rect,
     v : Rect,
-    shape_index :&RTree<usize> , 
-    obstacle_index : &RTree<usize>, 
-    boundary: Rect) -> Route 
+    shape_index :&RTree<usize> ,
+    obstacle_index : &RTree<usize>,
+    boundary: Rect) -> Route
 {
     return Route {
         length : u.distance(&v),
