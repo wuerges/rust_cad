@@ -116,11 +116,11 @@ impl<T: Copy> RTree<T> {
         let h = subtrees.pop().unwrap();
 
 
-        if left.len() > 4 {
+        if left.len() > 6 {
             *r2 = h.bb().mbr(r2);
             right.push(h);
         }
-        else if right.len() > 4 {
+        else if right.len() > 6 {
             *r1 = h.bb().mbr(r1);
             left.push(h);
         }
