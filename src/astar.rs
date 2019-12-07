@@ -6,7 +6,7 @@ pub struct Route {
     pub path : Vec<Pt> 
 }
 
-type Index = [u32; 3];
+type Index = [usize; 3];
 type Coords = [Vec<u32>; 3];
 
 pub struct AStar<'a> {
@@ -56,6 +56,28 @@ impl<'a> AStar<'a> {
             let x_max = self.boundary.p2[i];
             self.coords[i].retain(|x| *x >= x_min && *x <= x_max);
         }
+    }
+
+    fn find_point(&self, p : Pt) -> Index 
+    {
+        let mut x : Index = [0,0,0];
+        for i in 0..3 {
+            x[i] = self.coords[i].binary_search(&p[i]).unwrap();
+        }
+        return x;
+    }
+
+    fn make_point(&self, idx :Index) -> Pt {
+        [ self.coords[0][idx[0]]
+        , self.coords[1][idx[1]]
+        , self.coords[2][idx[2]] ]
+    }
+
+    pub fn run(&self) -> Vec<Pt> {
+        const INF : u32 = 1e9 as u32;
+
+        let start = self.source.closest_point(&self.target);
+        return Vec::new();
     }
 
 
