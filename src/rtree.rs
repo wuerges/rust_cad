@@ -116,11 +116,11 @@ impl<T: Copy> RTree<T> {
         let h = subtrees.pop().unwrap();
 
 
-        if left.len() > 4 {
+        if left.len() > 2 {
             *r2 = h.bb().mbr(r2);
             right.push(h);
         }
-        else if right.len() > 4 {
+        else if right.len() > 2 {
             *r1 = h.bb().mbr(r1);
             left.push(h);
         }
@@ -256,14 +256,9 @@ impl<T: Copy> RTree<T> {
             },
             RTree::Child(bb, mut subtrees) => { 
 
-                subtrees.sort_by(
-                    |t1, t2| 
-                    {
-                        let x = bb.mbr(&t1.bb()).area() - bb.area();
-                        let y = bb.mbr(&t2.bb()).area() - bb.area();
-
-                        return x.cmp(&y);
-                    }
+                subtrees.sort_by_cached_key(
+                    |t| 
+                    -(r.mbr(&t.bb()).area() - t.bb().area())
                 );
 
                 let h = subtrees.pop().unwrap();
@@ -280,7 +275,7 @@ impl<T: Copy> RTree<T> {
                         subtrees.push(one);
                         subtrees.push(two);
                         
-                        if subtrees.len() < 8 {
+                        if subtrees.len() < 4 {
                             return Ins::NoSplit(RTree::Child(new_bb, subtrees));
                         }
                         else {
@@ -359,5 +354,47 @@ mod tests {
 
     //     assert_eq!(tree.len(), 180000);
     // }
+
+    use std::io::*;
+
+    fn draw_tree<T>(tree : &RTree<T>, file : &str) -> std::io::Result<()>  {
+        use crate::rtreedraw::*;
+        use std::fs::File;
+        
+        let mut file = File::create(file)?;
+        let svg = from_rtree(tree);
+        file.write_all(format!("{}", svg).as_bytes())?;
+        return Ok(());
+    }
+
+    #[test]
+    fn insert_and_draw() -> std::io::Result<()> {
+
+        let mut t = RTree::empty();
+        draw_tree(&t, "empty01.svg")?;
+
+        t = t.insert(Rect::build_unsafe([0, 0, 0], [1, 1, 0]), ());
+        draw_tree(&t, "empty02.svg")?;
+        t = t.insert(Rect::build_unsafe([0, 0, 0], [2, 2, 0]), ());
+        draw_tree(&t, "empty03.svg")?;
+        t = t.insert(Rect::build_unsafe([4, 4, 0], [5, 5, 0]), ());
+        draw_tree(&t, "empty04.svg")?;
+        t = t.insert(Rect::build_unsafe([10, 10, 0], [11, 11, 0]), ());
+        draw_tree(&t, "empty05.svg")?;
+        t = t.insert(Rect::build_unsafe([20, 0, 0], [21, 1, 0]), ());
+        draw_tree(&t, "empty06.svg")?;
+        t = t.insert(Rect::build_unsafe([0, 10, 0], [1, 11, 0]), ());
+        draw_tree(&t, "empty07.svg")?;
+        t = t.insert(Rect::build_unsafe([0, 0, 0], [3, 1, 0]), ());
+        draw_tree(&t, "empty08.svg")?;
+        t = t.insert(Rect::build_unsafe([0, 10, 0], [1, 20, 0]), ());
+        draw_tree(&t, "empty09.svg")?;
+        t = t.insert(Rect::build_unsafe([0, 4, 0], [4, 5, 0]), ());
+        draw_tree(&t, "empty10.svg")?;
+        t = t.insert(Rect::build_unsafe([0, 8, 0], [14, 14, 0]), ());
+        draw_tree(&t, "empty11.svg")?;
+
+        Ok(())
+    }
 
 }

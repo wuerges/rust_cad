@@ -30,15 +30,6 @@ impl Finder {
 
     pub fn route(&mut self) -> Vec<Vec<Pt>> {
 
-        use crate::rtreedraw::*;
-        use std::fs::File;
-        use std::io::Write;
-        let svg = from_rtree(&self.shape_index);
-
-        {
-            let mut file = File::create("test.svg").unwrap();
-            file.write_all(format!("{}", svg).as_bytes());
-        }
         // println!("tree: {}", svg);
 
         let mut num_edges = 0;

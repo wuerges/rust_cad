@@ -11,9 +11,10 @@ fn choose_color(id : usize) -> ColorAttr {
 
 
 fn make_rect(r : &Rect) -> Fig {
-    return Fig::Rect(r.p1[0] as f32 / 5.0, r.p1[1] as f32 / 5.0
-                    , (r.p2[0] - r.p1[0]) as f32 / 5.0
-                    , (r.p2[1] - r.p1[1]) as f32 / 5.0);
+    let factor = 30.0;
+    return Fig::Rect(r.p1[0] as f32 * factor, r.p1[1] as f32 * factor
+                    , (r.p2[0] - r.p1[0]) as f32 * factor
+                    , (r.p2[1] - r.p1[1]) as f32 * factor);
 }
 
 fn make_style(id: usize) -> Attr {
@@ -37,5 +38,5 @@ fn from_rtree_rec<T>(tree : & RTree<T>, level : usize) -> Fig
 }
 
 pub fn from_rtree<T>(tree : &RTree<T>) -> Svg {
-    return Svg(vec![from_rtree_rec(tree, 0)], 1080, 720);
+    return Svg(vec![from_rtree_rec(tree, 0)], 1600, 1000);
 }
