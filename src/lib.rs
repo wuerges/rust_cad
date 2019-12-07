@@ -21,3 +21,4 @@ pub mod locationfinder;
 pub mod astar;
 pub mod parser;
 pub mod rtreedraw;
+pub mod config;

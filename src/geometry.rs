@@ -44,7 +44,7 @@ impl Rect {
     }
 
 
-    fn expand(&self, e :u32) -> Rect {
+    pub fn expand(&self, e :u32) -> Rect {
         let p1n = [self.p1[0]-e, self.p1[1]-e, self.p1[2]];
         let p2n = [self.p2[0]+e, self.p2[1]+e, self.p2[2]];
         return Rect { p1 : p1n, p2 : p2n };

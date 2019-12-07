@@ -37,6 +37,29 @@ impl<T: Copy> RTree<T> {
             }
         }
     }
+    pub fn search_with_key<F>(&self, r : &Rect, f : &mut F) -> bool 
+    where 
+        F: FnMut(&Rect, &T)-> bool,
+    {
+        match self {
+            RTree::Sent => true,
+            RTree::Leaf(key, v) => match r.intersection(&key) {
+                None => true,
+                Some(_) => f(key, v)
+            }
+            RTree::Child(bb, child) => match r.intersection(&bb) {
+                None => true,
+                Some(_) => {
+                    for c in child {
+                        if !c.search_with_key(r, f) {
+                            return false
+                        }
+                    }
+                    return true
+                }
+            }
+        }
+    }
 
     pub fn collect(&self, r : &Rect) -> Vec<T> {
         let mut vals = Vec::<T>::new();
