@@ -31,8 +31,9 @@ impl<'a> AStar<'a> {
             target : t,
             coords : Coords::default(),
         };
+        // println!("Creating AStar with {:?} and {:?}", s, t);
         a.add_shape(s);
-        a.add_shape(t);
+        a.add_shape(t); 
 
         let window = s.mbr(&t).expand(crate::config::WINDOW_SIZE);
 
@@ -53,6 +54,9 @@ impl<'a> AStar<'a> {
     }
 
     fn fix_coords(& mut self) {
+        // println!("coords before t = {:?}", self.coords);
+        // println!("boundary = {:?}", self.boundary);
+
         for i in 0..3 {
             self.coords[i].sort_unstable();
             self.coords[i].dedup();
@@ -60,6 +64,7 @@ impl<'a> AStar<'a> {
             let x_max = self.boundary.p2[i];
             self.coords[i].retain(|x| *x >= x_min && *x <= x_max);
         }
+        // println!("coords after t = {:?}", self.coords);
     }
 
     fn find_index(&self, p : Pt) -> Index
@@ -85,6 +90,10 @@ impl<'a> AStar<'a> {
         let mut pred : HashMap<Index, Index> = HashMap::new();
 
         let start = self.source.closest_point(&self.target);
+
+        // println!("self.source = {:?} target = {:?} start = {:?}", self.source, self.target, start);
+        // println!("distance {:?}", self.source.distance(&self.target));
+        // println!("coords = {:?}", self.coords);
 
         let s = self.find_index(start);
         dist.insert(s, 0);
@@ -175,13 +184,12 @@ impl<'a> AStar<'a> {
 pub fn astar(
     u : Rect,
     v : Rect,
-    shape_index :&RTree<usize> ,
     obstacle_index : &RTree<usize>,
     boundary: Rect) -> Route
 {
     let path = AStar::new(obstacle_index, u, v, boundary).run();
     return Route {
         length : u.distance(&v),
-        path : Vec::new()
+        path : path
     };
 }

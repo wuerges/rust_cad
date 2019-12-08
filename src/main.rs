@@ -1,7 +1,5 @@
 use rust_cad_geometry::*;
 
-use geometry::*;
-
 use locationfinder::*;
 use std::env;
 use crate::parser::*;
@@ -29,8 +27,8 @@ fn main() -> io::Result<()>  {
         s.p2[2] *= result.via_cost;
     }
 
-    result.boundary.p1[2] *= result.via_cost;
-    result.boundary.p2[2] *= result.via_cost;
+    result.boundary.p1[2];
+    result.boundary.p2[2] = result.metal_layers * result.via_cost;
 
 
     let mut f = Finder::new( 

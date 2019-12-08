@@ -91,7 +91,7 @@ impl<K :Ord +Copy, V> PriorityQueue<K, V> {
             return None
         }
         if self.data.len() == 1 {
-            return self.data.pop().map( |Item { key, value }| value );
+            return self.data.pop().map( |Item { key:_, value }| value );
         }
         let x = self.data.swap_remove(0);
         self.bubble_down(0);

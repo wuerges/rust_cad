@@ -28,9 +28,16 @@ pub fn manhatan(p1 : Pt, p2 : Pt) -> u32 {
     let mut r = 0;
     for i in 0..3 {
         use std::cmp::*;
-        r += max(p1[0], p2[0]) - min(p1[0], p2[0]);
+        r += max(p1[i], p2[i]) - min(p1[i], p2[i]);
     }  
     return r;  
+}
+
+fn sub_or_zero(a :u32, b:u32) -> u32 {
+    if b > a {
+        return 0;
+    }
+    return a - b;
 }
 
 impl Rect {
@@ -54,7 +61,7 @@ impl Rect {
 
 
     pub fn expand(&self, e :u32) -> Rect {
-        let p1n = [self.p1[0]-e, self.p1[1]-e, self.p1[2]];
+        let p1n = [sub_or_zero(self.p1[0], e), sub_or_zero(self.p1[1], e), self.p1[2]];
         let p2n = [self.p2[0]+e, self.p2[1]+e, self.p2[2]];
         return Rect { p1 : p1n, p2 : p2n };
     }
