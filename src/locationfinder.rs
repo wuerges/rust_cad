@@ -86,6 +86,10 @@ impl Finder {
                 rtq_q.look( &mut |it| {
                     let u = it.value.u;
 
+                    if it.value.rtq.is_empty() {
+                        return false;
+                    }
+
                     let v = it.value.rtq.pop();
                     let p = astar(vertices[u], vertices[v], &self.obs_index, self.bounds);
 
