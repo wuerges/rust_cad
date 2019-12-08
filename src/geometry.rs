@@ -110,6 +110,10 @@ impl Rect {
         return sum;
     }
 
+    pub fn hits(&self, other : &Rect) -> bool {
+        return self.distance(other) == 0;
+    }
+
     pub fn intersection(&self, other : &Rect) -> Option<Rect> {
 
         let p1i = maxpt(self.p1, other.p1);
