@@ -122,7 +122,7 @@ impl<'a> AStar<'a> {
                             manhatan(u_pt, v_pt)
                         };
 
-                        let a_star_heuristic = self.target.distance_point(&v_pt);
+                        let a_star_heuristic = (self.target.distance_point(&v_pt) as f64 * 1.01) as u32;
 
                         let old_w = *dist.get(&v).unwrap_or(&INF);
                         let new_w = dist.get(&u).unwrap_or(&INF) + w;
