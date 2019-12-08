@@ -40,8 +40,9 @@ fn main() -> io::Result<()>  {
     );
 
     println!("finder ok");
-
+    
     let route = f.route();
+    println!("routes = {:?}", route);
 
     print_routes(output, route, result.via_cost)?;
     // println!("Collect = {:?}", tree.collect(&r1));
@@ -72,17 +73,15 @@ fn print_routes(outfile : &str, routes : Vec<Vec<Pt>>, via_cost :u32 ) -> io::Re
             let [x1, y1, z1] = route[i];
             
             let l = std::cmp::min(z0, z1) / via_cost;
+            let le = std::cmp::max(z0, z1) / via_cost;
             if z0 == z1 {
                 let c = if x0 == x1 { 'V' } else { 'H' };
                 write!(f, "{}-line M{} ({},{}) ({},{})\n", c, l+1, x0, y0, x1, y1)?;
-
-//                     Via V1 (280,2798)
-// H-line M3 (799,2744) (829,2744)
-// V-line M3 (6589,1846) (6589,1870)
-
             }
             else {
-                write!(f, "Via V{} ({},{})", l+1, x0, y0)?;
+                for li in l..le {
+                    write!(f, "Via V{} ({},{})\n", li+1, x0, y0)?;
+                }
             }
         }
     }
