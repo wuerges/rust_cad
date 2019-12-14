@@ -150,6 +150,35 @@ impl<T: Copy> RTree<T> {
         }
     }
 
+    fn calculate_exaustive_split(subtrees : & Vec<RTree<T>>) -> u32 {
+
+        let mut bbs = [Rect::empty(); 512];
+
+        for i in 0..8 {
+            bbs[1<<i] = subtrees[i].bb();
+        }
+        for i in 1..512 {
+            if i - (i & -i) != 0 {
+                let o : i32 = i - (i & -i);
+                bbs[i as usize] = bbs[(i & -i) as usize].mbr(&bbs[o as usize]);
+            }
+        }
+
+
+        let mut least = 1e18 as i64;
+        let mut r1 = 0;
+        for i in 1..512 {
+            let o = (512-1) - i;
+            let inter = bbs[i].intersection(&bbs[o]);
+            let new_area = inter.map_or(0, |r| r.area());
+            if  new_area < least {
+                least = new_area;
+                r1 = o;
+            }
+        }        
+        return r1 as u32;
+    }
+
     fn split_subtrees_imut_2(mut subtrees : Vec<RTree<T>>) -> (RTree<T>, RTree<T>) {
 
         // Chooses the best rects for the subtrees using O(n^2)
