@@ -2,9 +2,9 @@ use crate::geometry::Rect;
 
 #[derive(Clone,Debug)]
 pub enum RTree<T> {
-    Sent,
+    Child (Rect, Vec<RTree<T>>),
     Leaf  (Rect, T),
-    Child (Rect, Vec<RTree<T>>)
+    Sent
 }
 
 enum Ins<T> {
@@ -19,17 +19,17 @@ impl<T: Copy> RTree<T> {
         F: FnMut(&T)-> bool,
     {
         match self {
-            RTree::Sent => {},
-            RTree::Leaf(key, v) => if key.hits(r) {
-                return f(v);
-            }
             RTree::Child(bb, child) => if bb.hits(r) {
                 for c in child {
                     if !c.search(r, f) {
                         return false
                     }
                 }
-            }
+            },
+            RTree::Leaf(key, v) => if key.hits(r) {
+                return f(v);
+            },
+            RTree::Sent => {}
         }
         return true;
     }
@@ -38,17 +38,17 @@ impl<T: Copy> RTree<T> {
         F: FnMut(&Rect, &T)-> bool,
     {
         match self {
-            RTree::Sent => {},
-            RTree::Leaf(key, v) => if key.hits(r) {
-                return f(key, v);
-            }
             RTree::Child(bb, child) => if bb.hits(r) {
                 for c in child {
                     if !c.search_with_key(r, f) {
                         return false;
                     }
                 }
-            }
+            },
+            RTree::Leaf(key, v) => if key.hits(r) {
+                return f(key, v);
+            },
+            RTree::Sent => {}
         }
         return true;
     }
@@ -118,7 +118,7 @@ impl<T: Copy> RTree<T> {
         subtrees : &mut Vec<RTree<T>>
     ) {
         
-        subtrees.sort_by_key( |t| {
+        subtrees.sort_by_cached_key( |t| {
             let r1_ = t.bb().mbr(&r1);
             let r2_ = t.bb().mbr(&r2);
 
@@ -169,74 +169,8 @@ impl<T: Copy> RTree<T> {
             }
         }
 
-        // partitions the node according to the selected rects.
-
         let mut left = Vec::new();
         let mut right = Vec::new();
-
-        // subtrees.sort_by_cached_key( |t| {
-        //     let bb = t.bb();
-
-        //     let a1 = r1.mbr(&bb).area() - r1.area();
-        //     let a2 = r2.mbr(&bb).area() - r2.area();
-        //     return std::cmp::min(a1, a2);
-
-        //     // if a1 < a2 {
-        //     //     return a1 as u64;
-        //     // }
-        //     // else {
-        //     //     return a2 as u64;
-        //     // }
-        // });
-
-
-
-        // subtrees.into_iter().for_each( |t| {
-        //     let bb = t.bb();
-
-        //     if left.len() > 4 {
-        //         right.push(t);
-        //         r2 = r2.mbr(&bb);
-        //     }
-        //     else if right.len() > 4 {
-        //         r1 = r1.mbr(&bb);
-        //         left.push(t);
-        //     }
-        //     else if r1.mbr(&bb).area() - r1.area() >  r2.mbr(&bb).area() - r2.area() {
-        //         right.push(t);
-        //         r2 = r2.mbr(&bb);
-        //     }
-        //     else {
-        //         r1 = r1.mbr(&bb);
-        //         left.push(t);
-        //     }
-        // });
-
-
-        // let (mut left, mut right) : (Vec<_>, Vec<_>)= subtrees.into_iter().partition( |t| {
-            
-        //     let a1 = r1.mbr(&t.bb()).area();
-        //     let a2 = r2.mbr(&t.bb()).area();
-            
-        //     return a1 < a2;
-        // });
-
-        // if left.is_empty() {
-        //     left.push(right.pop().unwrap());
-        // }
-        // if right.is_empty() {
-        //     right.push(left.pop().unwrap());
-        // }
-
-        // let bb1 = left.iter()
-        //     .map(|i| i.bb())
-        //     .fold(left[0].bb(), |sum, i| sum.mbr(&i));
-
-        // let bb2 = right.iter()
-        //     .map(|i| i.bb())
-        //     .fold(right[0].bb(), |sum, i| sum.mbr(&i));
-
-        // return (RTree::Child(bb1, left), RTree::Child(bb2, right));
 
         while !subtrees.is_empty() {
            
