@@ -1,18 +1,18 @@
 use crate::geometry::Rect;
 
 #[derive(Clone,Debug)]
-pub enum RTree<T> {
-    Child (Rect, Vec<RTree<T>>),
+pub enum RTree<'a, T> {
+    Child (Rect, Vec<&'a RTree<'a, T>>),
     Leaf  (Rect, T),
     Sent
 }
 
-enum Ins<T> {
-    NoSplit(RTree<T>),
-    Split(RTree<T>, RTree<T>)
+enum Ins<'b, T> {
+    NoSplit(RTree<'b, T>),
+    Split(RTree<'b, T>, RTree<'b, T>)
 }
 
-impl<T: Copy> RTree<T> {
+impl<'a, T: Copy> RTree<'a, T> {
 
     pub fn search<F>(&self, r : &Rect, f : &mut F) -> bool 
     where 
@@ -208,7 +208,7 @@ impl<T: Copy> RTree<T> {
         return (RTree::Child(r1, left), RTree::Child(r2, right));
     }
 
-    pub fn insert(self, r : Rect, v : T) -> RTree<T> {
+    pub fn insert(self, r : Rect, v : T) -> RTree<'a, T> {
         match self.insert_node_p_imut(r, v) {
             Ins::NoSplit(no_split) => {
                 no_split
@@ -221,7 +221,7 @@ impl<T: Copy> RTree<T> {
     }
 
 
-    fn insert_node_p_imut(self, r : Rect, v : T ) -> Ins<T> {
+    fn insert_node_p_imut(self, r : Rect, v : T ) -> Ins<'a, T> {
         match self {
             RTree::Sent => {
                 return Ins::NoSplit(RTree::Leaf(r, v));

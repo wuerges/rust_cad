@@ -9,15 +9,15 @@ use crate::astar::*;
 
 struct RTQ<'a> { u : usize, rtq : RTreeQueue<'a, usize> }
 
-pub struct Finder {
-    shape_index : RTree<usize>,
-    obs_index   : RTree<usize>,
+pub struct Finder<'a> {
+    shape_index : RTree<'a, usize>,
+    obs_index   : RTree<'a, usize>,
     shapes      : Vec<Rect>,
     bounds      : Rect,
 }
 
 
-impl Finder {
+impl Finder<'_> {
     pub fn new ( shapes : Vec<Rect>, obstacles : Vec<Rect>, bounds : Rect) -> Self {
 
         Finder {

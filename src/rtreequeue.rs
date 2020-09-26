@@ -6,7 +6,7 @@ use crate::priorityqueue::*;
 pub struct RTreeQueue<'a, T> {
     center : Rect,
     // rtree : Rc<RTreeImpl<T>>,
-    queue : PriorityQueue<u32, &'a RTree<T>>
+    queue : PriorityQueue<u32, &'a RTree<'a, T>>
 }
 
 impl<'a, T: Copy> RTreeQueue<'a, T> {
