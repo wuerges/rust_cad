@@ -42,7 +42,7 @@ fn main() -> io::Result<()>  {
     println!("finder ok");
     
     let route = f.route();
-    println!("routes = {:?}", route);
+    // println!("routes = {:?}", route);
 
     print_routes(output, route, result.via_cost)?;
     // println!("Collect = {:?}", tree.collect(&r1));

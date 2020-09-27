@@ -37,6 +37,125 @@ impl Finder {
         let mut muf = MUF::new(vertices.len());
         
         let mut routes = Vec::<Vec::<Pt>>::new();
+
+        let mut counts : Vec<usize>= vec![0; vertices.len()];
+        
+        // let mut rtq_q = PriorityQueue::<u32, Box<RTQ>>::new();
+        let mut route_q = PriorityQueue::<u32, (usize, usize, Route)>::new();
+        let mut rtq_q = PriorityQueue::<u32, RTQ>::new();
+
+        for (u, u_rect) in vertices.iter().enumerate() {            
+            let mut q = RTQ{ u : u, rtq : RTreeQueue::new(*u_rect, &self.shape_index)};
+            while q.rtq.peek() == 0 {
+                let v = q.rtq.pop();
+                if muf.find(q.u) != muf.find(v) {
+                    muf.union(q.u, v);
+                    num_edges += 1;
+                }
+            }
+            rtq_q.push(q.rtq.peek(), q);
+        }
+
+        println!("rtq ok, edges = {}", num_edges);
+
+        while num_edges + 1 < vertices.len() {
+
+            let route_min = route_q.peek().unwrap_or(std::u32::MAX);
+            let neighbor_min = rtq_q.peek().unwrap_or(std::u32::MAX);
+
+            if num_edges % 100 == 0 {
+                println!("progress {:?}/{:?}", num_edges+1, vertices.len());
+            }
+
+            if neighbor_min < route_min {
+                // if num_edges % 100 == 0 {
+                //     println!("need to add more routes! {} <=> {}", neighbor_min, route_min);
+                // }
+
+                rtq_q.look(|it| {
+                    let u = it.value.u;
+
+                    if it.value.rtq.is_empty() {
+                        return false;
+                    }
+
+                    counts[u] += 1;
+                    if counts[u] > 20 {
+                        return false;
+                    }
+
+                    let v = it.value.rtq.pop();
+                    let p = astar(vertices[u], vertices[v], &self.obs_index, self.bounds);
+
+                    if muf.find(u) != muf.find(v) {
+                        route_q.push(p.length, (u, v, p));
+                    }
+                    return true;
+                });
+            }
+            else {
+                let (u, v, route) =  route_q.pop().unwrap();
+                if muf.find(u) != muf.find(v) {
+                    muf.union(u, v);
+                    routes.push(route.path);
+                    num_edges += 1;
+                }
+            }
+        }
+
+        return routes;
+
+        // while num_edges + 1 < vertices.len() {
+        //     let route_min = route_q.peek().unwrap_or(std::u32::MAX);
+        //     if rtq_q.peek().unwrap_or(std::u32::MAX) 
+        //     <  route_min {
+
+        //         rtq_q.look(|it| {
+        //             let u = it.value.u;
+
+        //             if it.value.rtq.is_empty() {
+        //                 return false;
+        //             }
+
+        //             let v = it.value.rtq.pop();
+        //             // let p = astar(vertices[u], vertices[v], &self.obs_index, self.bounds);
+
+        //             if muf.find(u) != muf.find(v) {
+                        
+        //                 // route_q.push(p.length, (u, v, p));
+        //             }
+        //             return true;
+        //         });
+
+        //     }
+        //     else {
+        //         match route_q.pop() {
+        //             None => {
+        //                 break
+        //             },
+        //             Some( (u, v, route) ) => {
+        //                 if muf.find(u) != muf.find(v) {
+        //                     muf.union(u, v);
+        //                     routes.push(route.path);
+        //                     num_edges += 1;
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+
+        // return routes;
+    }
+
+    pub fn route2(&mut self) -> Vec<Vec<Pt>> {
+
+        // println!("tree: {}", svg);
+
+        let mut num_edges = 0;
+        let vertices = &self.shapes;
+        let mut muf = MUF::new(vertices.len());
+        
+        let mut routes = Vec::<Vec::<Pt>>::new();
         
         // let mut rtq_q = PriorityQueue::<u32, Box<RTQ>>::new();
         let mut route_q = PriorityQueue::<u32, (usize, usize, Route)>::new();
@@ -91,10 +210,11 @@ impl Finder {
                     }
 
                     let v = it.value.rtq.pop();
-                    let p = astar(vertices[u], vertices[v], &self.obs_index, self.bounds);
+                    // let p = astar(vertices[u], vertices[v], &self.obs_index, self.bounds);
 
                     if muf.find(u) != muf.find(v) {
-                        route_q.push(p.length, (u, v, p));
+                        
+                        // route_q.push(p.length, (u, v, p));
                     }
                     return true;
                 });
