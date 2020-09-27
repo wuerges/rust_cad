@@ -71,9 +71,9 @@ impl<K :Ord +Copy, V> PriorityQueue<K, V> {
         return self.data.first().and_then( |f| Some(f.key) );
     }
 
-    pub fn look<F>(&mut self, f: &mut F)
+    pub fn look<F>(&mut self, mut f: F)
     where
-        F: FnMut(&mut Item<K, V> ) -> bool,
+        F: FnMut(&mut Item<K, V>) -> bool,
     {
         if self.data.len() > 0 {
             if f(&mut self.data[0]) {

@@ -83,7 +83,7 @@ impl Finder {
             if rtq_q.peek().unwrap_or(std::u32::MAX) 
             <  route_min {
 
-                rtq_q.look( &mut |it| {
+                rtq_q.look(|it| {
                     let u = it.value.u;
 
                     if it.value.rtq.is_empty() {
