@@ -187,7 +187,9 @@ pub fn astar(
     obstacle_index : &RTree<usize>,
     boundary: Rect) -> Route
 {
-    let path = AStar::new(obstacle_index, u, v, boundary).run();
+    let x = RTree::empty();
+    // let path = AStar::new(obstacle_index, u, v, boundary).run();
+    let path = AStar::new(&x, u, v, boundary).run();
     return Route {
         length : u.distance(&v),
         path : path
