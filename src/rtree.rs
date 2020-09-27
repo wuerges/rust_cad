@@ -1,18 +1,19 @@
 use crate::geometry::Rect;
 
-#[derive(Clone,Debug)]
-pub enum RTree<'a, T> {
-    Child (Rect, Vec<&'a RTree<'a, T>>),
+#[derive(Debug)]
+pub enum RTree<T> {
+    Child (Rect, Vec<RTree<T>>),
     Leaf  (Rect, T),
     Sent
 }
 
-enum Ins<'b, T> {
-    NoSplit(RTree<'b, T>),
-    Split(RTree<'b, T>, RTree<'b, T>)
+enum Ins<T> {
+    NoSplit(RTree<T>),
+    Split(RTree<T>, RTree<T>)
 }
 
-impl<'a, T: Copy> RTree<'a, T> {
+impl<T: Copy> RTree<T> {
+
 
     pub fn search<F>(&self, r : &Rect, f : &mut F) -> bool 
     where 
@@ -150,34 +151,34 @@ impl<'a, T: Copy> RTree<'a, T> {
         }
     }
 
-    fn calculate_exaustive_split(subtrees : & Vec<RTree<T>>) -> u32 {
+    // fn calculate_exaustive_split(subtrees : & Vec<RTree<T>>) -> u32 {
 
-        let mut bbs = [Rect::empty(); 512];
+    //     let mut bbs = [Rect::empty(); 512];
 
-        for i in 0..8 {
-            bbs[1<<i] = subtrees[i].bb();
-        }
-        for i in 1..512 {
-            if i - (i & -i) != 0 {
-                let o : i32 = i - (i & -i);
-                bbs[i as usize] = bbs[(i & -i) as usize].mbr(&bbs[o as usize]);
-            }
-        }
+    //     for i in 0..8 {
+    //         bbs[1<<i] = subtrees[i].bb();
+    //     }
+    //     for i in 1..512 {
+    //         if i - (i & -i) != 0 {
+    //             let o : i32 = i - (i & -i);
+    //             bbs[i as usize] = bbs[(i & -i) as usize].mbr(&bbs[o as usize]);
+    //         }
+    //     }
 
 
-        let mut least = 1e18 as i64;
-        let mut r1 = 0;
-        for i in 1..512 {
-            let o = (512-1) - i;
-            let inter = bbs[i].intersection(&bbs[o]);
-            let new_area = inter.map_or(0, |r| r.area());
-            if  new_area < least {
-                least = new_area;
-                r1 = o;
-            }
-        }        
-        return r1 as u32;
-    }
+    //     let mut least = 1e18 as i64;
+    //     let mut r1 = 0;
+    //     for i in 1..512 {
+    //         let o = (512-1) - i;
+    //         let inter = bbs[i].intersection(&bbs[o]);
+    //         let new_area = inter.map_or(0, |r| r.area());
+    //         if  new_area < least {
+    //             least = new_area;
+    //             r1 = o;
+    //         }
+    //     }        
+    //     return r1 as u32;
+    // }
 
     fn split_subtrees_imut_2(mut subtrees : Vec<RTree<T>>) -> (RTree<T>, RTree<T>) {
 
@@ -208,28 +209,28 @@ impl<'a, T: Copy> RTree<'a, T> {
         return (RTree::Child(r1, left), RTree::Child(r2, right));
     }
 
-    pub fn insert(self, r : Rect, v : T) -> RTree<'a, T> {
+    pub fn insert(self, r : Rect, v : T) -> Self {
         match self.insert_node_p_imut(r, v) {
             Ins::NoSplit(no_split) => {
                 no_split
             },
             Ins::Split(one, two) => {
                 let bb = one.bb().mbr(&two.bb());
-                return RTree::Child(bb, vec![one, two]);
+                return RTree::Child(bb, vec![one, two]); // TODO allocation
             }
         }
     }
 
 
-    fn insert_node_p_imut(self, r : Rect, v : T ) -> Ins<'a, T> {
+    fn insert_node_p_imut(self, r : Rect, v : T ) -> Ins<T> {
         match self {
             RTree::Sent => {
-                return Ins::NoSplit(RTree::Leaf(r, v));
+                return Ins::NoSplit(RTree::Leaf(r, v)); // TODO allocation
             },
-            RTree::Leaf(key, value) => {
+            RTree::Leaf(_key, _value) => {
                 return Ins::Split(
-                    RTree::Leaf(r, v),
-                    RTree::Leaf(key, value),
+                    RTree::Leaf(r, v), // TODO allocation
+                    self, // TODO allocation
                 );
             },
             RTree::Child(bb, mut subtrees) => { 
@@ -240,6 +241,7 @@ impl<'a, T: Copy> RTree<'a, T> {
                 );
 
                 let h = subtrees.pop().unwrap();
+                
 
                 match h.insert_node_p_imut(r, v) {
                     Ins::NoSplit(no_split) => {
@@ -248,7 +250,6 @@ impl<'a, T: Copy> RTree<'a, T> {
                         return Ins::NoSplit(RTree::Child(new_bb, subtrees));
                     }
                     Ins::Split(one, two) => {
-
                         let new_bb = bb.mbr(&one.bb()).mbr(&two.bb());
                         subtrees.push(one);
                         subtrees.push(two);
@@ -258,7 +259,7 @@ impl<'a, T: Copy> RTree<'a, T> {
                         }
                         else {
                             let (left, right) = RTree::split_subtrees_imut_2(subtrees);
-                            return Ins::Split(left, right);
+                            return Ins::Split(left, right); // TODO allocation
                         }
                     }
                 }

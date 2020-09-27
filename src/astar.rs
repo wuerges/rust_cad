@@ -14,7 +14,7 @@ struct Index([usize; 3]);
 type Coords = [Vec<u32>; 3];
 
 pub struct AStar<'a> {
-    obstacle_index : &'a  RTree<'a, usize>,
+    obstacle_index : &'a  RTree<usize>,
     boundary : Rect,
     source : Rect,
     target : Rect,
