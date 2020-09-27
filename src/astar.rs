@@ -109,11 +109,12 @@ impl<'a> AStar<'a> {
                         t = u;
                         break;
                     }
-                    for v in self.neighbors(&u) {
+
+                    self.visit_neighbors(&u, |v| {
                         let v_pt = self.make_point(v);
 
                         if self.obstacle_index.hits(Rect::build(u_pt, v_pt)) {
-                            continue;
+                            return;
                         }
 
                         let w = if self.source.distance_point(&v_pt) == 0 {
@@ -132,7 +133,7 @@ impl<'a> AStar<'a> {
                             pred.insert(v, u);
                             queue.push(new_w+a_star_heuristic, v);
                         }
-                    }
+                    });
                 }
             }
         }
@@ -149,6 +150,31 @@ impl<'a> AStar<'a> {
         }
 
         return path;
+    }
+
+    fn visit_neighbors<F>(&self, idx : &Index, mut visitor : F) 
+    where F : FnMut(Index)
+    {
+        let Index([x,y,z]) = *idx;
+
+        if x > 0 {
+            visitor(Index([x-1, y, z]));
+        }
+        if x < self.coords[0].len()-1 {
+            visitor(Index([x+1, y, z]));
+        }
+        if y > 0 {
+            visitor(Index([x, y-1, z]));
+        }
+        if y < self.coords[1].len()-1 {
+            visitor(Index([x, y+1, z]));
+        }
+        if z > 0 {
+            visitor(Index([x, y, z-1]));
+        }
+        if z < self.coords[2].len()-1 {
+            visitor(Index([x, y, z+1]));
+        }
     }
 
     fn neighbors(&self, idx : &Index) -> Vec<Index> {
